@@ -44,7 +44,7 @@ export const services: Service[] = [
     title: 'Logo Designs',
     shortDescription: 'Memorable logos that define your brand.',
     description: 'A great logo is the cornerstone of your brand identity. We design unique and memorable logos that tell your brand\'s story and resonate with your target audience, ensuring your business stands out from the competition.',
-    price: 'Starting from ₹1,500',
+    price: 'Starting from ₹199',
     images: [
       { src: 'https://placehold.co/600x400.png', alt: 'Collection of logos', hint: 'abstract logo' },
       { src: 'https://placehold.co/600x400.png', alt: 'Logo design process sketch', hint: 'design sketch' },
@@ -58,7 +58,7 @@ export const services: Service[] = [
     title: 'Poster Designs',
     shortDescription: 'Eye-catching posters for events and promotions.',
     description: 'Promote your events, products, or services with professionally designed posters. We create compelling visuals that grab attention and communicate your message effectively, whether for print or digital distribution.',
-    price: 'Starting from ₹500',
+    price: 'Starting from ₹199',
     images: [
       { src: 'https://placehold.co/600x400.png', alt: 'Promotional poster for a music event', hint: 'event poster' },
       { src: 'https://placehold.co/600x400.png', alt: 'Corporate poster design', hint: 'corporate design' },
@@ -97,7 +97,7 @@ export const services: Service[] = [
     title: 'Business Card Design',
     shortDescription: 'Make a lasting impression with professional cards.',
     description: 'Network effectively with a business card that stands out. We design custom business cards that reflect your brand\'s professionalism and style, ensuring you leave a memorable impression.',
-    price: 'Starting from ₹750',
+    price: 'Starting from ₹99',
     images: [
       { src: 'https://placehold.co/600x400.png', alt: 'Modern business card design', hint: 'business card' },
       { src: 'https://placehold.co/600x400.png', alt: 'Stack of business cards', hint: 'professional networking' },
