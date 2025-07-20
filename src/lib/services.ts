@@ -110,7 +110,7 @@ export const services: Service[] = [
     title: 'WhatsApp Catalog Design',
     shortDescription: 'Showcase your products directly on WhatsApp.',
     description: 'Leverage WhatsApp for Business with a professionally designed product catalog. We help you set up and design your catalog to make it easy for customers to browse and purchase your products.',
-    price: 'Starting from ₹1,200',
+    price: 'Starting from ₹499',
     images: [
       { src: 'https://placehold.co/600x400.png', alt: 'WhatsApp product catalog on a phone', hint: 'product catalog' },
       { src: 'https://placehold.co/600x400.png', alt: 'Product photography for catalog', hint: 'product photo' },
