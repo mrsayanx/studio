@@ -16,7 +16,7 @@ export const services: Service[] = [
     title: 'Website Development',
     shortDescription: 'Custom, responsive, and high-performance websites.',
     description: 'We build robust and scalable websites tailored to your business needs. From e-commerce platforms to corporate sites, our development process ensures a flawless user experience, fast loading times, and SEO-friendly architecture.',
-    price: 'Starting from ₹10,000',
+    price: 'Starting from ₹999',
     images: [
       { src: 'https://placehold.co/600x400.png', alt: 'Code on a screen', hint: 'code editor' },
       { src: 'https://placehold.co/600x400.png', alt: 'Responsive design showcase', hint: 'responsive design' },
