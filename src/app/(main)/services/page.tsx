@@ -1,7 +1,6 @@
 import { services } from "@/lib/services";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import Image from "next/image";
 import Link from "next/link";
 
 export default function ServicesPage() {
@@ -15,20 +14,15 @@ export default function ServicesPage() {
         </div>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {services.map((service) => (
-            <Card key={service.id} className="flex flex-col overflow-hidden group transform transition-all duration-300 hover:scale-105 hover:shadow-primary/20 hover:shadow-lg">
-                <CardHeader className="p-0 relative h-48 w-full">
-                <Image
-                    src={service.images[0].src}
-                    alt={service.images[0].alt}
-                    fill
-                    className="w-full h-full object-cover"
-                    data-ai-hint={service.images[0].hint}
-                    unoptimized={true}
-                />
+            <Card key={service.id} className="flex flex-col overflow-hidden group transform transition-all duration-300 hover:scale-105 hover:shadow-primary/20 hover:shadow-lg text-center">
+                <CardHeader className="items-center p-6">
+                  <div className="p-4 bg-primary/10 rounded-full mb-4 border border-primary/20">
+                    <service.Icon className="h-8 w-8 text-primary" />
+                  </div>
+                  <CardTitle className="text-xl font-bold">{service.title}</CardTitle>
                 </CardHeader>
-                <CardContent className="flex-grow p-6">
-                <CardTitle className="text-xl font-bold mb-2">{service.title}</CardTitle>
-                <p className="text-muted-foreground text-sm">{service.shortDescription}</p>
+                <CardContent className="flex-grow px-6 pb-6">
+                  <p className="text-muted-foreground text-sm">{service.shortDescription}</p>
                 </CardContent>
                 <CardFooter className="p-6 pt-0">
                 <Button asChild className="w-full">
