@@ -30,7 +30,7 @@ export const services: Service[] = [
     title: 'Website Design',
     shortDescription: 'Beautiful and intuitive user interfaces.',
     description: 'Our design team creates visually stunning and user-friendly interfaces that captivate your audience. We focus on creating a seamless user journey that converts visitors into customers, reflecting your brand\'s identity in every pixel.',
-    price: 'Starting from ₹5,000',
+    price: 'Starting from ₹999',
     images: [
       { src: 'https://placehold.co/600x400.png', alt: 'Website wireframe', hint: 'website wireframe' },
       { src: 'https://placehold.co/600x400.png', alt: 'Color palette selection', hint: 'color palette' },
