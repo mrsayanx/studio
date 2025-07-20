@@ -1,9 +1,10 @@
 
 // This is the main file for managing your services.
+// All images are currently using placeholders from `https://placehold.co`.
 // To add your own images:
 // 1. Upload your image files to the `public/images/services` folder.
 // 2. Update the `src` path for the corresponding service below with your new filename.
-// For example, change '/images/services/logo-1.png' to '/images/services/your-new-logo.png'.
+// For example, change 'https://placehold.co/600x400.png' to '/images/services/your-new-image.png'.
 
 export type Service = {
   id: number;
@@ -25,9 +26,9 @@ export const services: Service[] = [
     description: 'We build robust and scalable websites tailored to your business needs. From e-commerce platforms to corporate sites, our development process ensures a flawless user experience, fast loading times, and SEO-friendly architecture.',
     price: 'Starting from ₹999',
     images: [
-      { src: '/images/services/web-dev-1.png', alt: 'Code on a screen', hint: 'code editor' },
-      { src: '/images/services/web-dev-2.png', alt: 'Responsive design showcase', hint: 'responsive design' },
-      { src: '/images/services/web-dev-3.png', alt: 'Database diagram', hint: 'database schema' },
+      { src: 'https://placehold.co/600x400.png', alt: 'Code on a screen', hint: 'code editor' },
+      { src: 'https://placehold.co/600x400.png', alt: 'Responsive design showcase', hint: 'responsive design' },
+      { src: 'https://placehold.co/600x400.png', alt: 'Database diagram', hint: 'database schema' },
     ],
     highlights: ['Full-stack Development', 'Responsive on all devices', 'Optimized for Speed', 'Secure and Scalable'],
   },
@@ -39,9 +40,9 @@ export const services: Service[] = [
     description: 'Our design team creates visually stunning and user-friendly interfaces that captivate your audience. We focus on creating a seamless user journey that converts visitors into customers, reflecting your brand\'s identity in every pixel.',
     price: 'Starting from ₹999',
     images: [
-      { src: '/images/services/web-design-1.png', alt: 'Website wireframe', hint: 'website wireframe' },
-      { src: '/images/services/web-design-2.png', alt: 'Color palette selection', hint: 'color palette' },
-      { src: '/images/services/web-design-3.png', alt: 'Mobile app design', hint: 'mobile design' },
+      { src: 'https://placehold.co/600x400.png', alt: 'Website wireframe', hint: 'website wireframe' },
+      { src: 'https://placehold.co/600x400.png', alt: 'Color palette selection', hint: 'color palette' },
+      { src: 'https://placehold.co/600x400.png', alt: 'Mobile app design', hint: 'mobile design' },
     ],
     highlights: ['UI/UX Research', 'Modern & Clean Layouts', 'Interactive Prototypes', 'Brand-centric Design'],
   },
@@ -53,12 +54,9 @@ export const services: Service[] = [
     description: 'A great logo is the cornerstone of your brand identity. We design unique and memorable logos that tell your brand\'s story and resonate with your target audience, ensuring your business stands out from the competition.',
     price: 'Starting from ₹199',
     images: [
-      // EXAMPLE: To use your own image, you would change this line.
-      // If you upload `my-logo.png` to `public/images/services`, you'd change the src to:
-      // { src: '/images/services/my-logo.png', alt: 'My Custom Logo', ... }
-      { src: '/images/services/my-custom-logo.png', alt: 'Collection of logos', hint: 'abstract logo' },
-      { src: '/images/services/logo-2.png', alt: 'Logo design process sketch', hint: 'design sketch' },
-      { src: '/images/services/logo-3.png', alt: 'Logo on a business card', hint: 'brand identity' },
+      { src: 'https://placehold.co/600x400.png', alt: 'Collection of logos', hint: 'abstract logo' },
+      { src: 'https://placehold.co/600x400.png', alt: 'Logo design process sketch', hint: 'design sketch' },
+      { src: 'https://placehold.co/600x400.png', alt: 'Logo on a business card', hint: 'brand identity' },
     ],
     highlights: ['Multiple Concepts', 'Vector Files Included', 'Full Copyright Ownership', 'Stationery Mockups'],
   },
@@ -70,8 +68,8 @@ export const services: Service[] = [
     description: 'Promote your events, products, or services with professionally designed posters. We create compelling visuals that grab attention and communicate your message effectively, whether for print or digital distribution.',
     price: 'Starting from ₹199',
     images: [
-      { src: '/images/services/poster-1.png', alt: 'Promotional poster for a music event', hint: 'event poster' },
-      { src: '/images/services/poster-2.png', alt: 'Corporate poster design', hint: 'corporate design' },
+      { src: 'https://placehold.co/600x400.png', alt: 'Promotional poster for a music event', hint: 'event poster' },
+      { src: 'https://placehold.co/600x400.png', alt: 'Corporate poster design', hint: 'corporate design' },
     ],
     highlights: ['Print-ready Files', 'Custom Illustrations', 'Fast Turnaround', 'Multiple Size Formats'],
   },
@@ -83,8 +81,8 @@ export const services: Service[] = [
     description: 'We develop and execute data-driven social media strategies to increase your brand awareness, engagement, and conversions. From content creation to community management, we handle it all.',
     price: 'Contact for Quote',
     images: [
-      { src: '/images/services/social-1.png', alt: 'Social media analytics dashboard', hint: 'social media analytics' },
-      { src: '/images/services/social-2.png', alt: 'Content calendar planning', hint: 'content plan' },
+      { src: 'https://placehold.co/600x400.png', alt: 'Social media analytics dashboard', hint: 'social media analytics' },
+      { src: 'https://placehold.co/600x400.png', alt: 'Content calendar planning', hint: 'content plan' },
     ],
     highlights: ['Strategy Development', 'Content Creation', 'Audience Growth', 'Performance Tracking & Reporting'],
   },
@@ -96,8 +94,8 @@ export const services: Service[] = [
     description: 'Get your business on the world\'s largest social network. We set up and optimize your Facebook page for maximum visibility and engagement, including profile and cover photos, business info, and call-to-action buttons.',
     price: '₹999',
     images: [
-      { src: '/images/services/fb-1.png', alt: 'Facebook page on a laptop', hint: 'facebook profile' },
-      { src: '/images/services/fb-2.png', alt: 'Facebook cover design', hint: 'cover photo' },
+      { src: 'https://placehold.co/600x400.png', alt: 'Facebook page on a laptop', hint: 'facebook profile' },
+      { src: 'https://placehold.co/600x400.png', alt: 'Facebook cover design', hint: 'cover photo' },
     ],
     highlights: ['Page Creation & Optimization', 'Custom URL', 'Cover & Profile Photo Design', 'Initial Content Strategy'],
   },
@@ -109,8 +107,8 @@ export const services: Service[] = [
     description: 'Network effectively with a business card that stands out. We design custom business cards that reflect your brand\'s professionalism and style, ensuring you leave a memorable impression.',
     price: 'Starting from ₹99',
     images: [
-      { src: '/images/services/card-1.png', alt: 'Modern business card design', hint: 'business card' },
-      { src: '/images/services/card-2.png', alt: 'Stack of business cards', hint: 'professional networking' },
+      { src: 'https://placehold.co/600x400.png', alt: 'Modern business card design', hint: 'business card' },
+      { src: 'https://placehold.co/600x400.png', alt: 'Stack of business cards', hint: 'professional networking' },
     ],
     highlights: ['Double-sided Design', 'Print-ready PDF', 'Multiple Design Concepts', 'QR Code Integration'],
   },
@@ -122,8 +120,8 @@ export const services: Service[] = [
     description: 'Leverage WhatsApp for Business with a professionally designed product catalog. We help you set up and design your catalog to make it easy for customers to browse and purchase your products.',
     price: 'Starting from ₹499',
     images: [
-      { src: '/images/services/wa-1.png', alt: 'WhatsApp product catalog on a phone', hint: 'product catalog' },
-      { src: '/images/services/wa-2.png', alt: 'Product photography for catalog', hint: 'product photo' },
+      { src: 'https://placehold.co/600x400.png', alt: 'WhatsApp product catalog on a phone', hint: 'product catalog' },
+      { src: 'https://placehold.co/600x400.png', alt: 'Product photography for catalog', hint: 'product photo' },
     ],
     highlights: ['Catalog Setup', 'Professional Product Images', 'Compelling Descriptions', 'Easy to Manage'],
   },
@@ -135,8 +133,8 @@ export const services: Service[] = [
     description: 'Harness the power of AI to create high-quality, engaging video ads at a fraction of the cost. We use cutting-edge tools to produce professional videos that drive results for your campaigns.',
     price: 'Starting from ₹2,500',
     images: [
-      { src: '/images/services/ai-video-1.png', alt: 'Video editing software interface', hint: 'video editing' },
-      { src: '/images/services/ai-video-2.png', alt: 'AI generating video scenes', hint: 'artificial intelligence' },
+      { src: 'https://placehold.co/600x400.png', alt: 'Video editing software interface', hint: 'video editing' },
+      { src: 'https://placehold.co/600x400.png', alt: 'AI generating video scenes', hint: 'artificial intelligence' },
     ],
     highlights: ['Scriptwriting', 'AI Voiceovers', 'Stock Footage Included', 'Multiple Video Formats'],
   },
@@ -148,8 +146,8 @@ export const services: Service[] = [
     description: 'Launch or rebrand your YouTube channel with a complete design kit. We provide a custom logo, channel art (cover), and a template for your video thumbnails to create a cohesive and professional look.',
     price: 'Starting from ₹3,000',
     images: [
-      { src: '/images/services/yt-1.png', alt: 'YouTube channel page on a monitor', hint: 'youtube channel' },
-      { src: '/images/services/yt-2.png', alt: 'A grid of YouTube video thumbnails', hint: 'video thumbnails' },
+      { src: 'https://placehold.co/600x400.png', alt: 'YouTube channel page on a monitor', hint: 'youtube channel' },
+      { src: 'https://placehold.co/600x400.png', alt: 'A grid of YouTube video thumbnails', hint: 'video thumbnails' },
     ],
     highlights: ['Custom Channel Logo', 'Engaging Channel Art', 'Click-worthy Thumbnail Template', 'Brand Style Guide'],
   },
