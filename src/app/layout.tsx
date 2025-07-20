@@ -23,7 +23,7 @@ export default function RootLayout({
     const timer = setTimeout(() => {
       setLoading(false);
       sessionStorage.setItem('splashShown', 'true');
-    }, 1500); // Splash screen duration
+    }, 1000); // Splash screen duration
 
     return () => clearTimeout(timer);
   }, []);

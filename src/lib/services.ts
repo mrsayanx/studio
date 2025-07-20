@@ -1,5 +1,3 @@
-// This is the main file for managing your services.
-
 import type { LucideIcon } from "lucide-react";
 import {
   PenTool,
