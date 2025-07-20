@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -72,6 +72,15 @@ export default function Header() {
               </Button>
             </SheetTrigger>
             <SheetContent side="right">
+               <SheetHeader>
+                <SheetTitle>
+                   <Link href="/" className="flex items-center space-x-2">
+                    <span className="font-bold text-lg">
+                      <span className="text-primary">T</span>ekitto
+                    </span>
+                  </Link>
+                </SheetTitle>
+              </SheetHeader>
               <nav className="grid gap-6 text-lg font-medium mt-8">
                 {navLinks.map((link) => (
                   <Link
