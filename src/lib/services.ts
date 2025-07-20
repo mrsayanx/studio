@@ -1,3 +1,10 @@
+
+// This is the main file for managing your services.
+// To add your own images:
+// 1. Upload your image files to the `public/images/services` folder.
+// 2. Update the `src` path for the corresponding service below with your new filename.
+// For example, change '/images/services/logo-1.png' to '/images/services/your-new-logo.png'.
+
 export type Service = {
   id: number;
   slug: string;
@@ -46,7 +53,10 @@ export const services: Service[] = [
     description: 'A great logo is the cornerstone of your brand identity. We design unique and memorable logos that tell your brand\'s story and resonate with your target audience, ensuring your business stands out from the competition.',
     price: 'Starting from ₹199',
     images: [
-      { src: '/images/services/logo-1.png', alt: 'Collection of logos', hint: 'abstract logo' },
+      // EXAMPLE: To use your own image, you would change this line.
+      // If you upload `my-logo.png` to `public/images/services`, you'd change the src to:
+      // { src: '/images/services/my-logo.png', alt: 'My Custom Logo', ... }
+      { src: '/images/services/my-custom-logo.png', alt: 'Collection of logos', hint: 'abstract logo' },
       { src: '/images/services/logo-2.png', alt: 'Logo design process sketch', hint: 'design sketch' },
       { src: '/images/services/logo-3.png', alt: 'Logo on a business card', hint: 'brand identity' },
     ],
