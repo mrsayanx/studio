@@ -16,14 +16,14 @@ export default function ServicesPage() {
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {services.map((service) => (
             <Card key={service.id} className="flex flex-col overflow-hidden group transform transition-all duration-300 hover:scale-105 hover:shadow-primary/20 hover:shadow-lg">
-                <CardHeader className="p-0">
+                <CardHeader className="p-0 relative h-48 w-full">
                 <Image
                     src={service.images[0].src}
                     alt={service.images[0].alt}
-                    width={600}
-                    height={400}
-                    className="w-full h-48 object-cover"
+                    fill
+                    className="w-full h-full object-cover"
                     data-ai-hint={service.images[0].hint}
+                    unoptimized={true}
                 />
                 </CardHeader>
                 <CardContent className="flex-grow p-6">

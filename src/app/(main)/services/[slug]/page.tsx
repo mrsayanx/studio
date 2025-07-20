@@ -31,14 +31,14 @@ export default function ServiceDetailPage({ params }: { params: { slug: string }
               {service.images.map((image, index) => (
                 <CarouselItem key={index}>
                   <Card>
-                    <CardContent className="p-0">
+                    <CardContent className="p-0 relative aspect-[3/2] w-full">
                       <Image
                         src={image.src}
                         alt={image.alt}
-                        width={600}
-                        height={400}
-                        className="rounded-lg object-cover w-full h-auto aspect-[3/2]"
+                        fill
+                        className="rounded-lg object-cover"
                         data-ai-hint={image.hint}
+                        unoptimized={true}
                       />
                     </CardContent>
                   </Card>
@@ -77,14 +77,14 @@ export default function ServiceDetailPage({ params }: { params: { slug: string }
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {relatedServices.map((relatedService) => (
                 <Card key={relatedService.id} className="flex flex-col overflow-hidden group transform transition-all duration-300 hover:scale-105 hover:shadow-primary/20 hover:shadow-lg">
-                  <CardHeader className="p-0">
+                  <CardHeader className="p-0 relative h-48 w-full">
                     <Image
                       src={relatedService.images[0].src}
                       alt={relatedService.images[0].alt}
-                      width={600}
-                      height={400}
-                      className="w-full h-48 object-cover"
+                      fill
+                      className="object-cover"
                       data-ai-hint={relatedService.images[0].hint}
+                      unoptimized={true}
                     />
                   </CardHeader>
                   <CardContent className="flex-grow p-6">
