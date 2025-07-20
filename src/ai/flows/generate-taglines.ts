@@ -1,4 +1,4 @@
-// use server'
+'use server'
 
 /**
  * @fileOverview Generates AI-driven taglines and ad copy options for service promotion.
@@ -41,7 +41,7 @@ Brand Name: {{{brandName}}}
 Brand Keywords: {{{brandKeywords}}}
 
 Taglines (5 variations, short and catchy):
-Ad Copy:`, // Fixed the typo here
+Ad Copy:`,
 });
 
 const generateTaglinesFlow = ai.defineFlow({
