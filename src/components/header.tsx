@@ -4,12 +4,11 @@ import Link from "next/link";
 import {
   Menu,
   Search,
-  ShoppingCart,
   UploadCloud,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -60,10 +59,6 @@ export default function Header() {
               <Search className="h-4 w-4" />
             </Button>
           </div>
-          <Button variant="ghost" size="icon">
-            <ShoppingCart className="h-5 w-5" />
-            <span className="sr-only">Shopping Cart</span>
-          </Button>
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" className="md:hidden" size="icon">
