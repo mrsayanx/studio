@@ -36,7 +36,7 @@ const SplashScreen = () => {
           }
         `}</style>
         <h1
-          className="welcome-text font-headline text-2xl md:text-4xl lg:text-5xl font-black text-center tracking-wider text-white"
+          className="welcome-text font-headline text-xl md:text-2xl lg:text-3xl font-black text-center tracking-wider text-white"
           style={{ textShadow: "0px 0px 10px rgba(255, 255, 255, 0.3)" }}
         >
           {"Welcome To ".split("").map((char, index) => (
