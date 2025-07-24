@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2 } from "lucide-react";
 import Link from "next/link";
-import { PricingPlan } from '@/lib/services';
-import { getPricingPlans } from '@/lib/firestore';
+import { PricingPlan, initialPricingPlans } from '@/lib/services';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function PricingPage() {
@@ -14,18 +13,10 @@ export default function PricingPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchData() {
-      setIsLoading(true);
-      try {
-        const pricingData = await getPricingPlans();
-        setPricingPlans(pricingData);
-      } catch (error) {
-        console.error("Failed to fetch pricing plans from Firestore", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchData();
+    setIsLoading(true);
+    const sortedPricing = [...initialPricingPlans].sort((a,b) => a.id === 'basic' ? -1 : 1);
+    setPricingPlans(sortedPricing);
+    setIsLoading(false);
   }, []);
 
   return (

@@ -18,9 +18,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Service, PricingPlan, YouTubeVideo } from "@/lib/services";
-import { getServices, addService, updateService, deleteService, getPricingPlans, updatePricingPlan, getYouTubeVideos, updateYouTubeVideo } from '@/lib/firestore';
-import { Trash2, Edit, Video, PlusCircle, Loader2 } from "lucide-react";
+import { Service, PricingPlan, initialServices, initialPricingPlans } from "@/lib/services";
+import { Trash2, Edit, PlusCircle, Loader2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,8 +29,30 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
+
+const LOCAL_STORAGE_KEYS = {
+    SERVICES: 'tekitto_services',
+    PRICING: 'tekitto_pricing_plans',
+};
+
+// Helper to get data from localStorage or return initial data
+function getFromLocalStorage<T>(key: string, initialData: T): T {
+    if (typeof window === 'undefined') return initialData;
+    const stored = localStorage.getItem(key);
+    try {
+        return stored ? JSON.parse(stored) : initialData;
+    } catch (error) {
+        console.error("Error parsing localStorage data:", error);
+        return initialData;
+    }
+}
+
+// Helper to set data to localStorage
+function setToLocalStorage<T>(key: string, data: T) {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(key, JSON.stringify(data));
+}
 
 
 export default function AdminDashboardPage() {
@@ -41,7 +62,6 @@ export default function AdminDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [services, setServices] = useState<Service[]>([]);
   const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([]);
-  const [youtubeVideos, setYoutubeVideos] = useState<YouTubeVideo[]>([]);
   
   const [isServiceDialogOpen, setIsServiceDialogOpen] = useState(false);
   const [currentService, setCurrentService] = useState<Partial<Service> | null>(null);
@@ -51,8 +71,6 @@ export default function AdminDashboardPage() {
   const [isPricingDialogOpen, setIsPricingDialogOpen] = useState(false);
   const [currentPlan, setCurrentPlan] = useState<PricingPlan | null>(null);
   
-  const [isYoutubeDialogOpen, setIsYoutubeDialogOpen] = useState(false);
-  const [currentYoutubeVideo, setCurrentYoutubeVideo] = useState<YouTubeVideo | null>(null);
 
   useEffect(() => {
     const isAuthenticated = sessionStorage.getItem("isAdminAuthenticated");
@@ -61,32 +79,18 @@ export default function AdminDashboardPage() {
       return;
     }
     
-    async function loadData() {
+    function loadData() {
         setIsLoading(true);
-        try {
-            const [servicesData, pricingData, youtubeData] = await Promise.all([
-                getServices(),
-                getPricingPlans(),
-                getYouTubeVideos()
-            ]);
-            setServices(servicesData);
-            setPricingPlans(pricingData);
-            setYoutubeVideos(youtubeData);
-        } catch (error) {
-            console.error("Failed to load data from Firestore", error);
-            toast({
-                variant: "destructive",
-                title: "Error loading data",
-                description: "Could not load data from Firestore. Please try again later."
-            });
-        } finally {
-            setIsLoading(false);
-        }
+        const servicesData = getFromLocalStorage(LOCAL_STORAGE_KEYS.SERVICES, initialServices.map((s,i) => ({...s, id: `service_${i}`})));
+        const pricingData = getFromLocalStorage(LOCAL_STORAGE_KEYS.PRICING, initialPricingPlans);
+        setServices(servicesData.sort((a: Service, b: Service) => a.title.localeCompare(b.title)));
+        setPricingPlans(pricingData.sort((a: PricingPlan, b: PricingPlan) => a.id === 'basic' ? -1 : 1));
+        setIsLoading(false);
     }
 
     loadData();
 
-  }, [router, toast]);
+  }, [router]);
   
   const handleLogout = () => {
     sessionStorage.removeItem("isAdminAuthenticated");
@@ -119,13 +123,10 @@ export default function AdminDashboardPage() {
 
   const confirmDelete = async () => {
     if (itemToDelete && itemToDelete.id) {
-      const success = await deleteService(itemToDelete.id);
-      if (success) {
-        setServices(prevServices => prevServices.filter(s => s.id !== itemToDelete.id));
+        const updatedServices = services.filter(s => s.id !== itemToDelete.id);
+        setServices(updatedServices);
+        setToLocalStorage(LOCAL_STORAGE_KEYS.SERVICES, updatedServices);
         toast({ title: "Service Deleted", description: `"${itemToDelete.title}" has been removed.` });
-      } else {
-        toast({ variant: "destructive", title: "Deletion Failed", description: "Could not delete the service." });
-      }
     }
     setIsDeleteAlertOpen(false);
     setItemToDelete(null);
@@ -135,27 +136,18 @@ export default function AdminDashboardPage() {
     e.preventDefault();
     if (!currentService) return;
 
-    let success = false;
-    // Distinguish between add and edit
+    let updatedServices;
     if (currentService.id) { // Editing existing service
-        success = await updateService(currentService.id, currentService);
-        if (success) {
-            setServices(prev => prev.map(s => s.id === currentService.id ? {...s, ...currentService} as Service : s));
-            toast({ title: "Service Updated", description: `"${currentService.title}" has been updated.` });
-        }
+        updatedServices = services.map(s => s.id === currentService.id ? currentService as Service : s);
+        toast({ title: "Service Updated", description: `"${currentService.title}" has been updated.` });
     } else { // Adding new service
-        const newServiceData = { ...currentService, id: undefined } as Omit<Service, 'id'>;
-        const newId = await addService(newServiceData);
-        if (newId) {
-            success = true;
-            setServices(prev => [...prev, { id: newId, ...newServiceData } as Service]);
-            toast({ title: "Service Added", description: `"${currentService.title}" has been added.` });
-        }
+        const newService = { ...currentService, id: `service_${Date.now()}` } as Service;
+        updatedServices = [...services, newService];
+        toast({ title: "Service Added", description: `"${currentService.title}" has been added.` });
     }
     
-    if (!success) {
-        toast({ variant: "destructive", title: "Operation Failed", description: "Could not save the service." });
-    }
+    setServices(updatedServices);
+    setToLocalStorage(LOCAL_STORAGE_KEYS.SERVICES, updatedServices);
     
     setIsServiceDialogOpen(false);
     setCurrentService(null);
@@ -186,13 +178,10 @@ export default function AdminDashboardPage() {
   const handlePlanFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (currentPlan) {
-        const success = await updatePricingPlan(currentPlan.id, currentPlan);
-        if (success) {
-            setPricingPlans(prev => prev.map(p => p.id === currentPlan.id ? currentPlan : p));
-            toast({ title: "Pricing Plan Updated", description: `"${currentPlan.title}" has been updated.`});
-        } else {
-             toast({ variant: "destructive", title: "Update Failed", description: "Could not update the plan." });
-        }
+        const updatedPlans = pricingPlans.map(p => p.id === currentPlan.id ? currentPlan : p);
+        setPricingPlans(updatedPlans);
+        setToLocalStorage(LOCAL_STORAGE_KEYS.PRICING, updatedPlans);
+        toast({ title: "Pricing Plan Updated", description: `"${currentPlan.title}" has been updated.`});
     }
     setIsPricingDialogOpen(false);
     setCurrentPlan(null);
@@ -210,34 +199,6 @@ export default function AdminDashboardPage() {
             (updatedPlan as any)[id] = value;
         }
         setCurrentPlan(updatedPlan);
-    }
-  };
-
-  // --- YouTube Video Management ---
-  const handleEditYoutubeVideo = (video: YouTubeVideo) => {
-    setCurrentYoutubeVideo(video);
-    setIsYoutubeDialogOpen(true);
-  };
-
-  const handleYoutubeFormSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (currentYoutubeVideo) {
-        const success = await updateYouTubeVideo(currentYoutubeVideo.id, currentYoutubeVideo);
-        if (success) {
-            setYoutubeVideos(prev => prev.map(v => v.id === currentYoutubeVideo.id ? currentYoutubeVideo : v));
-            toast({ title: "YouTube Video Updated", description: `"${currentYoutubeVideo.title}" has been updated.`});
-        } else {
-            toast({ variant: "destructive", title: "Update Failed", description: "Could not update the video." });
-        }
-    }
-    setIsYoutubeDialogOpen(false);
-    setCurrentYoutubeVideo(null);
-  };
-  
-  const handleYoutubeInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { id, value } = e.target;
-    if (currentYoutubeVideo) {
-        setCurrentYoutubeVideo({ ...currentYoutubeVideo, [id]: value });
     }
   };
 
@@ -297,59 +258,30 @@ export default function AdminDashboardPage() {
         </CardContent>
       </Card>
       
-      <div className="grid md:grid-cols-2 gap-8">
-        {/* Pricing Plans Management Card */}
-        <Card>
-          <CardHeader>
-              <CardTitle>Manage Pricing Plans</CardTitle>
-              <CardDescription>Update the details of the pricing plans.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {pricingPlans.map((plan) => (
-                <div key={plan.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                      <h3 className="font-bold">{plan.title}</h3>
-                      <p className="text-sm text-muted-foreground">{plan.price}</p>
-                  </div>
-                  <Button variant="outline" size="sm" onClick={() => handleEditPlan(plan)}>
-                      <Edit className="h-4 w-4 mr-2"/>
-                      Edit Plan
-                  </Button>
+      {/* Pricing Plans Management Card */}
+      <Card>
+        <CardHeader>
+            <CardTitle>Manage Pricing Plans</CardTitle>
+            <CardDescription>Update the details of the pricing plans.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {pricingPlans.map((plan) => (
+              <div key={plan.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div>
+                    <h3 className="font-bold">{plan.title}</h3>
+                    <p className="text-sm text-muted-foreground">{plan.price}</p>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* YouTube Videos Management Card */}
-        <Card>
-          <CardHeader>
-              <CardTitle>Manage YouTube Videos</CardTitle>
-              <CardDescription>Update the videos featured on the homepage.</CardDescription>
-          </CardHeader>
-          <CardContent>
-             <div className="space-y-4">
-               {youtubeVideos.map((video) => (
-                 <div key={video.id} className="flex items-center justify-between p-4 border rounded-lg">
-                   <div className="flex items-center gap-4 overflow-hidden">
-                      <Video className="h-6 w-6 text-muted-foreground flex-shrink-0" />
-                      <div className="flex-grow overflow-hidden">
-                          <h3 className="font-bold truncate">{video.title}</h3>
-                          <p className="text-sm text-muted-foreground">ID: {video.videoId}</p>
-                      </div>
-                   </div>
-                   <Button variant="outline" size="sm" onClick={() => handleEditYoutubeVideo(video)}>
-                      <Edit className="h-4 w-4 mr-2"/>
-                      Edit
-                   </Button>
-                 </div>
-               ))}
-             </div>
-          </CardContent>
-        </Card>
-      </div>
-
+                <Button variant="outline" size="sm" onClick={() => handleEditPlan(plan)}>
+                    <Edit className="h-4 w-4 mr-2"/>
+                    Edit Plan
+                </Button>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+      
       {/* Service Delete Confirmation Dialog */}
        <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
         <AlertDialogContent>
@@ -443,36 +375,6 @@ export default function AdminDashboardPage() {
           )}
         </DialogContent>
       </Dialog>
-      
-      {/* YouTube Video Edit Dialog */}
-      <Dialog open={isYoutubeDialogOpen} onOpenChange={setIsYoutubeDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit YouTube Video: {currentYoutubeVideo?.title}</DialogTitle>
-          </DialogHeader>
-          {currentYoutubeVideo && (
-            <form onSubmit={handleYoutubeFormSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto p-1">
-              <div className="space-y-2">
-                <Label htmlFor="title">Video Title</Label>
-                <Input id="title" value={currentYoutubeVideo.title} onChange={handleYoutubeInputChange} required />
-              </div>
-               <div className="space-y-2">
-                <Label htmlFor="videoId">YouTube Video ID</Label>
-                <Input id="videoId" value={currentYoutubeVideo.videoId} onChange={handleYoutubeInputChange} required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="description">Video Description</Label>
-                <Textarea id="description" value={currentYoutubeVideo.description} onChange={handleYoutubeInputChange} required rows={5}/>
-              </div>
-              <DialogFooter>
-                 <Button type="button" variant="outline" onClick={() => setIsYoutubeDialogOpen(false)}>Cancel</Button>
-                <Button type="submit">Save Video</Button>
-              </DialogFooter>
-            </form>
-          )}
-        </DialogContent>
-      </Dialog>
-
     </div>
   );
 }

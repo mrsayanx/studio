@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Service, getIconComponent } from "@/lib/services";
-import { getServices } from '@/lib/firestore';
+import { Service, getIconComponent, initialServices } from "@/lib/services";
 import { notFound, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -19,29 +18,22 @@ export default function ServiceDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchData() {
-      if (!slug) return;
-      setIsLoading(true);
-      try {
-        const allServices = await getServices();
-        const currentService = allServices.find((s: Service) => s.slug === slug);
-        
-        if (currentService) {
-          setService(currentService);
-          const related = allServices.filter((s: Service) => s.id !== currentService.id).slice(0, 3);
-          setRelatedServices(related);
-        } else {
-          setService(null);
-        }
-      } catch (error) {
-        console.error("Failed to fetch services from Firestore", error);
-        setService(null);
-      } finally {
-        setIsLoading(false);
-      }
+    if (!slug) return;
+    
+    setIsLoading(true);
+    
+    const allServices = [...initialServices].map((s, i) => ({...s, id: `service_${i}`}));
+    const currentService = allServices.find((s: Service) => s.slug === slug);
+    
+    if (currentService) {
+      setService(currentService);
+      const related = allServices.filter((s: Service) => s.id !== currentService.id).slice(0, 3);
+      setRelatedServices(related);
+    } else {
+      setService(null);
     }
     
-    fetchData();
+    setIsLoading(false);
   }, [slug]);
 
   if (isLoading) {

@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Service, getIconComponent } from "@/lib/services";
-import { getServices } from '@/lib/firestore';
+import { Service, getIconComponent, initialServices } from "@/lib/services";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
@@ -13,18 +12,10 @@ export default function ServicesPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchData() {
-      setIsLoading(true);
-      try {
-        const servicesData = await getServices();
-        setServices(servicesData);
-      } catch (error) {
-        console.error("Failed to fetch services from Firestore", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchData();
+    setIsLoading(true);
+    const sortedServices = [...initialServices].sort((a, b) => a.title.localeCompare(b.title)).map((s, i) => ({...s, id: `service_${i}`}));
+    setServices(sortedServices);
+    setIsLoading(false);
   }, []);
 
   return (

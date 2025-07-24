@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Service, getIconComponent, PricingPlan, YouTubeVideo } from "@/lib/services";
-import { getServices, getPricingPlans, getYouTubeVideos } from '@/lib/firestore';
+import { Service, getIconComponent, PricingPlan, initialServices, initialPricingPlans } from "@/lib/services";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { CheckCircle2 } from "lucide-react";
@@ -18,28 +17,19 @@ const WhatsAppIcon = () => (
 export default function HomePage() {
   const [services, setServices] = useState<Service[]>([]);
   const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([]);
-  const [youtubeVideos, setYoutubeVideos] = useState<YouTubeVideo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchData() {
-      setIsLoading(true);
-      try {
-        const [servicesData, pricingData, youtubeData] = await Promise.all([
-          getServices(),
-          getPricingPlans(),
-          getYouTubeVideos()
-        ]);
-        setServices(servicesData);
-        setPricingPlans(pricingData);
-        setYoutubeVideos(youtubeData);
-      } catch (error) {
-        console.error("Failed to fetch data from Firestore", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchData();
+    // Simulate fetching data
+    setIsLoading(true);
+    // In a real app without a DB, you might use localStorage or just static data.
+    // Here we'll just use the initial hardcoded data.
+    const sortedServices = [...initialServices].sort((a, b) => a.title.localeCompare(b.title)).map((s, i) => ({...s, id: `service_${i}`}));
+    const sortedPricing = [...initialPricingPlans].sort((a,b) => a.id === 'basic' ? -1 : 1);
+    
+    setServices(sortedServices);
+    setPricingPlans(sortedPricing);
+    setIsLoading(false);
   }, []);
 
   return (
@@ -116,57 +106,6 @@ export default function HomePage() {
               </Button>
             </div>
           </div>
-        </section>
-
-        <section id="videos" className="w-full py-12 md:py-24 lg:py-32 bg-background/90">
-            <div className="container px-4 md:px-6">
-                <div className="text-center mb-12">
-                    <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl font-headline">Our Latest Videos</h2>
-                    <p className="mt-3 max-w-2xl mx-auto text-muted-foreground md:text-xl">
-                        Check out our latest videos for insights, tutorials, and success stories.
-                    </p>
-                </div>
-                {isLoading ? (
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8 max-w-5xl mx-auto">
-                        <Card>
-                            <CardContent className="p-4">
-                                <Skeleton className="w-full aspect-video mb-4" />
-                                <Skeleton className="h-6 w-3/4 mb-2" />
-                                <Skeleton className="h-4 w-full" />
-                            </CardContent>
-                        </Card>
-                         <Card>
-                            <CardContent className="p-4">
-                                <Skeleton className="w-full aspect-video mb-4" />
-                                <Skeleton className="h-6 w-3/4 mb-2" />
-                                <Skeleton className="h-4 w-full" />
-                            </CardContent>
-                        </Card>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8 max-w-5xl mx-auto">
-                        {youtubeVideos.map(video => (
-                            <Card key={video.id} className="overflow-hidden shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-primary/20">
-                                <div className="aspect-w-16 aspect-h-9">
-                                    <iframe
-                                        src={`https://www.youtube.com/embed/${video.videoId}`}
-                                        title={video.title}
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                        allowFullScreen
-                                        className="w-full h-full"
-                                    ></iframe>
-                                </div>
-                                <CardHeader>
-                                    <CardTitle>{video.title}</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <CardDescription>{video.description}</CardDescription>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                )}
-            </div>
         </section>
 
         <section id="pricing" className="w-full py-12 md:py-24 lg:py-32 bg-background">

@@ -14,14 +14,14 @@ import {
 
 
 export type Service = {
-  id: string; // Changed to string for Firestore document IDs
+  id: string; 
   slug: string;
   title: string;
   shortDescription: string;
   description: string;
   price: string;
   highlights: string[];
-  Icon: string; // Storing only the name in Firestore
+  Icon: string; 
 };
 
 export type PricingPlan = {
@@ -30,13 +30,6 @@ export type PricingPlan = {
   price: string;
   isPopular: boolean;
   features: string[];
-};
-
-export type YouTubeVideo = {
-  id: string; // Changed to string for Firestore document IDs
-  videoId: string;
-  title: string;
-  description: string;
 };
 
 // This data will be used to seed the database for the first time.
@@ -160,19 +153,6 @@ export const initialPricingPlans: PricingPlan[] = [
       'WhatsApp Marketing Help',
     ]
   }
-];
-
-export const initialYouTubeVideos: Omit<YouTubeVideo, 'id'>[] = [
-    {
-        videoId: 'dQw4w9WgXcQ',
-        title: 'Our Featured Project Showcase',
-        description: 'Take a look at some of the best work we have delivered to our clients. See how we transform ideas into reality with creativity and technology.'
-    },
-    {
-        videoId: 'L_LUpnjgPso',
-        title: 'Client Testimonials & Success Stories',
-        description: 'Hear directly from our satisfied clients about their experience working with Tekitto and how we helped them achieve their business goals.'
-    }
 ];
 
 // Helper function to get the correct icon component
