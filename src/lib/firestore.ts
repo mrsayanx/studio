@@ -5,40 +5,46 @@ import { initialServices, initialPricingPlans, initialYouTubeVideos, Service, Pr
 
 // --- Collection References ---
 const servicesCollection = collection(db, 'services') as CollectionReference<Omit<Service, 'id'>>;
-const pricingCollection = collection(db, 'pricing') as CollectionReference<PricingPlan>;
+const pricingCollection = collection(db, 'pricing') as CollectionReference<Omit<PricingPlan, 'id'>>;
 const youtubeCollection = collection(db, 'youtube') as CollectionReference<Omit<YouTubeVideo, 'id'>>;
 
-
 // --- Helper function to seed initial data and return it ---
-async function seedAndFetch<T>(
+async function seedAndFetch<T extends { id: string }>(
   collectionRef: CollectionReference<any>, 
-  initialData: any[], 
-  idField?: keyof T, 
-  orderByField?: string,
+  initialData: Omit<T, 'id'>[],
+  idField?: keyof T,
   sortFn?: (a: T, b: T) => number
 ): Promise<T[]> {
     const batch = writeBatch(db);
-    initialData.forEach((item) => {
-        // Use the specific ID if provided (like for pricing plans), otherwise let Firestore generate it.
-        const docRef = idField ? doc(collectionRef, item[idField]) : doc(collectionRef);
-        batch.set(docRef, item);
+    const newDocs: T[] = [];
+
+    initialData.forEach((itemData) => {
+        let docRef;
+        let id;
+
+        if (idField && (itemData as any)[idField]) {
+            id = (itemData as any)[idField];
+            docRef = doc(collectionRef, id);
+        } else {
+            // Firestore will auto-generate an ID
+            docRef = doc(collectionRef);
+            id = docRef.id;
+        }
+        
+        batch.set(docRef, itemData);
+        newDocs.push({ id, ...itemData } as T);
     });
+
     await batch.commit();
 
-    // After seeding, fetch the data again to ensure consistency
-    const q = orderByField ? query(collectionRef, orderBy(orderByField)) : collectionRef;
-    const newSnapshot = await getDocs(q);
-    const data = newSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as T));
-    
+    // After seeding, return the data we just created
     if (sortFn) {
-        return data.sort(sortFn);
+        return newDocs.sort(sortFn);
     }
-    return data;
+    return newDocs;
 }
 
-
 // --- Service Functions ---
-
 export async function getServices(): Promise<Service[]> {
   try {
     const q = query(servicesCollection, orderBy("title"));
@@ -46,8 +52,8 @@ export async function getServices(): Promise<Service[]> {
     
     if (snapshot.empty) {
       console.log("Services collection is empty, seeding initial data...");
-      // Firestore will auto-generate IDs for services
-      return await seedAndFetch<Service>(servicesCollection, initialServices, undefined, "title");
+      const sortedData = await seedAndFetch<Service>(servicesCollection, initialServices);
+      return sortedData.sort((a,b) => a.title.localeCompare(b.title));
     }
     
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Service));
@@ -91,7 +97,7 @@ export async function deleteService(serviceId: string): Promise<boolean> {
 
 
 // --- Pricing Plan Functions ---
-const pricingSort = (a: PricingPlan, b: PricingPlan) => {
+const pricingSort = (a: PricingPlan, b: PricingPlan): number => {
     if (a.id === 'basic') return -1;
     if (b.id === 'basic') return 1;
     return 0;
@@ -103,8 +109,7 @@ export async function getPricingPlans(): Promise<PricingPlan[]> {
     
     if (snapshot.empty) {
       console.log("Pricing collection is empty, seeding initial data...");
-      // Pricing plans have specific IDs ('basic', 'premium')
-      return await seedAndFetch<PricingPlan>(pricingCollection, initialPricingPlans, 'id', undefined, pricingSort);
+      return await seedAndFetch<PricingPlan>(pricingCollection, initialPricingPlans, 'id', pricingSort);
     }
     
     const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as PricingPlan));
