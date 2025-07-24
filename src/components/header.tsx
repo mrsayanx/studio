@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { ThemeToggle } from "./theme-toggle";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -45,7 +46,7 @@ export default function Header() {
           </nav>
         </div>
 
-        <div className="flex flex-1 items-center justify-end space-x-4">
+        <div className="flex flex-1 items-center justify-end space-x-2">
           <div className="hidden md:flex flex-1 max-w-sm items-center space-x-2">
             <Input
               type="search"
@@ -56,6 +57,9 @@ export default function Header() {
               <Search className="h-4 w-4" />
             </Button>
           </div>
+
+          <ThemeToggle />
+
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" className="md:hidden" size="icon">

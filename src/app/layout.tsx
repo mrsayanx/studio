@@ -5,6 +5,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import SplashScreen from '@/components/splash-screen';
 import FloatingWhatsappButton from '@/components/floating-whatsapp';
+import { ThemeProvider } from '@/components/theme-provider';
 
 export default function RootLayout({
   children,
@@ -14,7 +15,6 @@ export default function RootLayout({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Using sessionStorage to show splash screen only once per session.
     if (sessionStorage.getItem('splashShown')) {
       setLoading(false);
       return;
@@ -23,13 +23,13 @@ export default function RootLayout({
     const timer = setTimeout(() => {
       setLoading(false);
       sessionStorage.setItem('splashShown', 'true');
-    }, 1000); // Splash screen duration
+    }, 1000); 
 
     return () => clearTimeout(timer);
   }, []);
 
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <title>Tekitto</title>
         <meta name="description" content="Grow Your Business Digitally With Tekitto" />
@@ -38,15 +38,22 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-        {loading ? (
-          <SplashScreen />
-        ) : (
-          <>
-            {children}
-            <FloatingWhatsappButton />
-            <Toaster />
-          </>
-        )}
+        <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem
+            disableTransitionOnChange
+        >
+          {loading ? (
+            <SplashScreen />
+          ) : (
+            <>
+              {children}
+              <FloatingWhatsappButton />
+              <Toaster />
+            </>
+          )}
+        </ThemeProvider>
       </body>
     </html>
   );
