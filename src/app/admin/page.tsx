@@ -20,7 +20,7 @@ export default function AdminLoginPage() {
     setIsLoading(true);
 
     // In a real application, you would use environment variables for credentials
-    if (username === 'admin' && password === 'password') {
+    if (username === 'tekitto' && password === '8345805877') {
       toast({ title: "Login Successful", description: "Redirecting to dashboard..." });
       // In a real app, you'd set a session token here
       sessionStorage.setItem("isAdminAuthenticated", "true");
@@ -50,7 +50,7 @@ export default function AdminLoginPage() {
                 id="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="admin"
+                placeholder="tekitto"
                 required
               />
             </div>
@@ -61,7 +61,7 @@ export default function AdminLoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="password"
+                placeholder="********"
                 required
               />
             </div>
