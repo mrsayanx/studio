@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import {
   Menu,
@@ -20,6 +21,8 @@ const navLinks = [
 ];
 
 export default function Header() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-sm">
       <div className="container flex h-16 items-center space-x-4 sm:justify-between sm:space-x-0">
@@ -53,7 +56,7 @@ export default function Header() {
               <Search className="h-4 w-4" />
             </Button>
           </div>
-          <Sheet>
+          <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" className="md:hidden" size="icon">
                 <Menu className="h-6 w-6" />
@@ -63,7 +66,7 @@ export default function Header() {
             <SheetContent side="right">
                <SheetHeader>
                 <SheetTitle>
-                   <Link href="/" className="flex items-center space-x-2">
+                   <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
                     <span className="font-bold text-lg">
                       <span className="text-primary">T</span>ekitto
                     </span>
@@ -76,6 +79,7 @@ export default function Header() {
                     key={link.href}
                     href={link.href}
                     className="text-muted-foreground hover:text-foreground"
+                    onClick={() => setIsMobileMenuOpen(false)}
                   >
                     {link.label}
                   </Link>
