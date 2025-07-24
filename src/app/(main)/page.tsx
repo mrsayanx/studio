@@ -33,19 +33,19 @@ export default function HomePage() {
       const storedYoutube = localStorage.getItem(YOUTUBE_STORAGE_KEY);
       const storedHomepageContent = localStorage.getItem(HOMEPAGE_CONTENT_STORAGE_KEY);
       
-      if (storedServices) {
+      if (storedServices && storedServices !== '[]') {
         setServices(JSON.parse(storedServices));
       } else {
         setServices(initialServices);
       }
 
-      if (storedPricing) {
+      if (storedPricing && storedPricing !== '[]') {
         setPricingPlans(JSON.parse(storedPricing));
       } else {
         setPricingPlans(initialPricingPlans);
       }
 
-       if (storedYoutube) {
+       if (storedYoutube && storedYoutube !== '[]') {
         setYoutubeVideos(JSON.parse(storedYoutube));
       } else {
         setYoutubeVideos(initialYouTubeVideos);
@@ -241,5 +241,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-    

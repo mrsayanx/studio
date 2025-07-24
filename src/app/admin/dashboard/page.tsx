@@ -73,18 +73,26 @@ export default function AdminDashboardPage() {
   }, [router]);
 
   useEffect(() => {
-    localStorage.setItem(SERVICES_STORAGE_KEY, JSON.stringify(services));
+    // Only save to localStorage if the services array is not empty
+    if (services.length > 0) {
+      localStorage.setItem(SERVICES_STORAGE_KEY, JSON.stringify(services));
+    }
   }, [services]);
 
   useEffect(() => {
-    localStorage.setItem(PRICING_STORAGE_KEY, JSON.stringify(pricingPlans));
+     if (pricingPlans.length > 0) {
+      localStorage.setItem(PRICING_STORAGE_KEY, JSON.stringify(pricingPlans));
+    }
   }, [pricingPlans]);
 
   useEffect(() => {
-    localStorage.setItem(YOUTUBE_STORAGE_KEY, JSON.stringify(youtubeVideos));
+     if (youtubeVideos.length > 0) {
+      localStorage.setItem(YOUTUBE_STORAGE_KEY, JSON.stringify(youtubeVideos));
+    }
   }, [youtubeVideos]);
   
   useEffect(() => {
+    // homepageContent is an object, not an array, so no length check needed
     localStorage.setItem(HOMEPAGE_CONTENT_STORAGE_KEY, JSON.stringify(homepageContent));
   }, [homepageContent]);
 

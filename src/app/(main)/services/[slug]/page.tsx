@@ -23,7 +23,7 @@ export default function ServiceDetailPage() {
   useEffect(() => {
     try {
       const storedServices = localStorage.getItem(SERVICES_STORAGE_KEY);
-      const services = storedServices ? JSON.parse(storedServices) : initialServices;
+      const services = (storedServices && storedServices !== '[]') ? JSON.parse(storedServices) : initialServices;
       setAllServices(services);
       
       const currentService = services.find((s: Service) => s.slug === slug);

@@ -216,5 +216,3 @@ export const getIconComponent = (iconName: string | LucideIcon): LucideIcon => {
   };
   return iconMap[iconName] || Code;
 };
-
-    

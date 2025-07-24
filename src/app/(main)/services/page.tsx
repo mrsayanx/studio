@@ -17,7 +17,7 @@ export default function ServicesPage() {
   useEffect(() => {
     try {
       const storedServices = localStorage.getItem(SERVICES_STORAGE_KEY);
-      if (storedServices) {
+      if (storedServices && storedServices !== '[]') {
         setServices(JSON.parse(storedServices));
       } else {
         setServices(initialServices);

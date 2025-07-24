@@ -17,7 +17,7 @@ export default function PricingPage() {
   useEffect(() => {
     try {
       const storedPricing = localStorage.getItem(PRICING_STORAGE_KEY);
-      if (storedPricing) {
+      if (storedPricing && storedPricing !== '[]') {
         setPricingPlans(JSON.parse(storedPricing));
       } else {
         setPricingPlans(initialPricingPlans);
