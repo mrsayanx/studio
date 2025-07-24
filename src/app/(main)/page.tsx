@@ -23,11 +23,11 @@ export default function HomePage() {
               <p className="mt-4 text-lg text-muted-foreground md:text-xl">
                 Your one-stop solution for stunning websites, engaging marketing, and powerful branding.
               </p>
-              <div className="mt-8 flex justify-center gap-4">
-                <Button asChild size="lg">
+              <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Button asChild size="lg" className="w-full sm:w-auto">
                   <Link href="#services">Explore Services</Link>
                 </Button>
-                <Button asChild variant="outline" size="lg">
+                <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
                   <Link href="#pricing">View Pricing</Link>
                 </Button>
               </div>
@@ -127,3 +127,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
