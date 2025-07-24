@@ -1,9 +1,7 @@
 "use client";
-import type { Metadata } from 'next';
-import { useState, useEffect } from 'react';
+
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
-import SplashScreen from '@/components/splash-screen';
 import FloatingWhatsappButton from '@/components/floating-whatsapp';
 import { ThemeProvider } from '@/components/theme-provider';
 
@@ -12,21 +10,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (sessionStorage.getItem('splashShown')) {
-      setLoading(false);
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      setLoading(false);
-      sessionStorage.setItem('splashShown', 'true');
-    }, 1000); 
-
-    return () => clearTimeout(timer);
-  }, []);
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -44,15 +27,9 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
         >
-          {loading ? (
-            <SplashScreen />
-          ) : (
-            <>
-              {children}
-              <FloatingWhatsappButton />
-              <Toaster />
-            </>
-          )}
+          {children}
+          <FloatingWhatsappButton />
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

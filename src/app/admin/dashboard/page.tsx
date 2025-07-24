@@ -146,7 +146,7 @@ export default function AdminDashboardPage() {
         toast({ title: "Service Added", description: `"${currentService.title}" has been added.` });
     }
     
-    setServices(updatedServices);
+    setServices(updatedServices.sort((a,b) => a.title.localeCompare(b.title)));
     setToLocalStorage(LOCAL_STORAGE_KEYS.SERVICES, updatedServices);
     
     setIsServiceDialogOpen(false);

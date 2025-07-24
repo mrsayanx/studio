@@ -6,7 +6,6 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { PricingPlan, initialPricingPlans } from '@/lib/services';
-import { Skeleton } from '@/components/ui/skeleton';
 
 export default function PricingPage() {
   const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([]);
