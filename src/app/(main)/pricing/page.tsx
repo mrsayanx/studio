@@ -5,29 +5,27 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2 } from "lucide-react";
 import Link from "next/link";
-import { initialPricingPlans, PricingPlan } from '@/lib/services';
+import { PricingPlan } from '@/lib/services';
+import { getPricingPlans } from '@/lib/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-
-const PRICING_STORAGE_KEY = 'tekitto_pricing_plans';
 
 export default function PricingPage() {
   const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const storedPricing = localStorage.getItem(PRICING_STORAGE_KEY);
-      if (storedPricing && storedPricing !== '[]') {
-        setPricingPlans(JSON.parse(storedPricing));
-      } else {
-        setPricingPlans(initialPricingPlans);
+    async function fetchData() {
+      setIsLoading(true);
+      try {
+        const pricingData = await getPricingPlans();
+        setPricingPlans(pricingData);
+      } catch (error) {
+        console.error("Failed to fetch pricing plans from Firestore", error);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Failed to parse pricing from localStorage", error);
-      setPricingPlans(initialPricingPlans);
-    } finally {
-      setIsLoading(false);
     }
+    fetchData();
   }, []);
 
   return (

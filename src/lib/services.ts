@@ -14,14 +14,14 @@ import {
 
 
 export type Service = {
-  id: number;
+  id: string; // Changed to string for Firestore document IDs
   slug: string;
   title: string;
   shortDescription: string;
   description: string;
   price: string;
   highlights: string[];
-  Icon: LucideIcon | string; // Allow string for dynamic icon names
+  Icon: string; // Storing only the name in Firestore
 };
 
 export type PricingPlan = {
@@ -33,15 +33,15 @@ export type PricingPlan = {
 };
 
 export type YouTubeVideo = {
-  id: number;
+  id: string; // Changed to string for Firestore document IDs
   videoId: string;
   title: string;
   description: string;
 };
 
-export const initialServices: Service[] = [
+// This data will be used to seed the database for the first time.
+export const initialServices: Omit<Service, 'id'>[] = [
   {
-    id: 1,
     slug: 'website-development',
     title: 'Website Development',
     shortDescription: 'Custom, responsive, and high-performance websites.',
@@ -51,7 +51,6 @@ export const initialServices: Service[] = [
     Icon: 'Code',
   },
   {
-    id: 2,
     slug: 'website-design',
     title: 'Website Design',
     shortDescription: 'Beautiful and intuitive user interfaces.',
@@ -61,7 +60,6 @@ export const initialServices: Service[] = [
     Icon: 'Palette',
   },
   {
-    id: 3,
     slug: 'logo-designs',
     title: 'Logo Designs',
     shortDescription: 'Memorable logos that define your brand.',
@@ -71,7 +69,6 @@ export const initialServices: Service[] = [
     Icon: 'PenTool',
   },
   {
-    id: 4,
     slug: 'poster-designs',
     title: 'Poster Designs',
     shortDescription: 'Eye-catching posters for events and promotions.',
@@ -81,7 +78,6 @@ export const initialServices: Service[] = [
     Icon: 'Megaphone',
   },
   {
-    id: 5,
     slug: 'social-media-marketing',
     title: 'Social Media Marketing',
     shortDescription: 'Engage and grow your audience on social platforms.',
@@ -91,7 +87,6 @@ export const initialServices: Service[] = [
     Icon: 'ThumbsUp',
   },
   {
-    id: 6,
     slug: 'facebook-page-setup',
     title: 'Facebook Page Setup',
     shortDescription: 'Professional setup of your Facebook business page.',
@@ -101,7 +96,6 @@ export const initialServices: Service[] = [
     Icon: 'ThumbsUp',
   },
   {
-    id: 7,
     slug: 'business-card-design',
     title: 'Business Card Design',
     shortDescription: 'Make a lasting impression with professional cards.',
@@ -111,7 +105,6 @@ export const initialServices: Service[] = [
     Icon: 'CreditCard',
   },
   {
-    id: 8,
     slug: 'whatsapp-catalog-design',
     title: 'WhatsApp Catalog Design',
     shortDescription: 'Showcase your products directly on WhatsApp.',
@@ -121,7 +114,6 @@ export const initialServices: Service[] = [
     Icon: 'MessageCircle',
   },
   {
-    id: 9,
     slug: 'ai-video-ads',
     title: 'AI Video Ads',
     shortDescription: 'Create stunning video ads with AI technology.',
@@ -131,7 +123,6 @@ export const initialServices: Service[] = [
     Icon: 'Clapperboard',
   },
   {
-    id: 10,
     slug: 'youtube-channel-kit',
     title: 'YouTube Channel Design Kit',
     shortDescription: 'Logo, cover, and thumbnail designs for YouTube.',
@@ -171,15 +162,13 @@ export const initialPricingPlans: PricingPlan[] = [
   }
 ];
 
-export const initialYouTubeVideos: YouTubeVideo[] = [
+export const initialYouTubeVideos: Omit<YouTubeVideo, 'id'>[] = [
     {
-        id: 1,
         videoId: 'dQw4w9WgXcQ',
         title: 'Our Featured Project Showcase',
         description: 'Take a look at some of the best work we have delivered to our clients. See how we transform ideas into reality with creativity and technology.'
     },
     {
-        id: 2,
         videoId: 'L_LUpnjgPso',
         title: 'Client Testimonials & Success Stories',
         description: 'Hear directly from our satisfied clients about their experience working with Tekitto and how we helped them achieve their business goals.'
@@ -187,9 +176,7 @@ export const initialYouTubeVideos: YouTubeVideo[] = [
 ];
 
 // Helper function to get the correct icon component
-export const getIconComponent = (iconName: string | LucideIcon): LucideIcon => {
-  if (typeof iconName !== 'string') return iconName;
-
+export const getIconComponent = (iconName: string): LucideIcon => {
   const iconMap: { [key: string]: LucideIcon } = {
     PenTool,
     Palette,

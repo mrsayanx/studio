@@ -18,8 +18,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { initialServices, Service, initialPricingPlans, PricingPlan, initialYouTubeVideos, YouTubeVideo } from "@/lib/services";
-import { Trash2, Edit, Video, PlusCircle } from "lucide-react";
+import { Service, PricingPlan, YouTubeVideo } from "@/lib/services";
+import { getServices, addService, updateService, deleteService, getPricingPlans, updatePricingPlan, getYouTubeVideos, updateYouTubeVideo } from '@/lib/firestore';
+import { Trash2, Edit, Video, PlusCircle, Loader2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,24 +30,20 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
-
-const SERVICES_STORAGE_KEY = 'tekitto_services';
-const PRICING_STORAGE_KEY = 'tekitto_pricing_plans';
-const YOUTUBE_STORAGE_KEY = 'tekitto_youtube_videos';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
   const { toast } = useToast();
 
+  const [isLoading, setIsLoading] = useState(true);
   const [services, setServices] = useState<Service[]>([]);
   const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([]);
   const [youtubeVideos, setYoutubeVideos] = useState<YouTubeVideo[]>([]);
   
   const [isServiceDialogOpen, setIsServiceDialogOpen] = useState(false);
-  const [currentService, setCurrentService] = useState<Service | null>(null);
+  const [currentService, setCurrentService] = useState<Partial<Service> | null>(null);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<Service | null>(null);
 
@@ -62,48 +59,33 @@ export default function AdminDashboardPage() {
       router.push('/admin');
       return;
     }
-
-    try {
-        const storedServices = localStorage.getItem(SERVICES_STORAGE_KEY);
-        setServices(storedServices && storedServices !== '[]' ? JSON.parse(storedServices) : initialServices);
-        
-        const storedPricing = localStorage.getItem(PRICING_STORAGE_KEY);
-        setPricingPlans(storedPricing && storedPricing !== '[]' ? JSON.parse(storedPricing) : initialPricingPlans);
-
-        const storedYoutube = localStorage.getItem(YOUTUBE_STORAGE_KEY);
-        setYoutubeVideos(storedYoutube && storedYoutube !== '[]' ? JSON.parse(storedYoutube) : initialYouTubeVideos);
-
-    } catch (error) {
-        console.error("Failed to parse from localStorage", error);
-        toast({
-            variant: "destructive",
-            title: "Error loading data",
-            description: "Could not load data from local storage. Using initial data."
-        });
-        setServices(initialServices);
-        setPricingPlans(initialPricingPlans);
-        setYoutubeVideos(initialYouTubeVideos);
+    
+    async function loadData() {
+        setIsLoading(true);
+        try {
+            const [servicesData, pricingData, youtubeData] = await Promise.all([
+                getServices(),
+                getPricingPlans(),
+                getYouTubeVideos()
+            ]);
+            setServices(servicesData);
+            setPricingPlans(pricingData);
+            setYoutubeVideos(youtubeData);
+        } catch (error) {
+            console.error("Failed to load data from Firestore", error);
+            toast({
+                variant: "destructive",
+                title: "Error loading data",
+                description: "Could not load data from Firestore. Please try again later."
+            });
+        } finally {
+            setIsLoading(false);
+        }
     }
+
+    loadData();
+
   }, [router, toast]);
-
-  useEffect(() => {
-    // Prevent writing empty initial array back to storage on first load
-    if (services.length > 0) {
-      localStorage.setItem(SERVICES_STORAGE_KEY, JSON.stringify(services));
-    }
-  }, [services]);
-
-  useEffect(() => {
-     if (pricingPlans.length > 0) {
-      localStorage.setItem(PRICING_STORAGE_KEY, JSON.stringify(pricingPlans));
-    }
-  }, [pricingPlans]);
-
-  useEffect(() => {
-     if (youtubeVideos.length > 0) {
-      localStorage.setItem(YOUTUBE_STORAGE_KEY, JSON.stringify(youtubeVideos));
-    }
-  }, [youtubeVideos]);
   
   const handleLogout = () => {
     sessionStorage.removeItem("isAdminAuthenticated");
@@ -113,7 +95,6 @@ export default function AdminDashboardPage() {
   // --- Service Management ---
   const handleAddNewService = () => {
     setCurrentService({
-      id: services.length > 0 ? Math.max(...services.map(s => s.id)) + 1 : 1,
       title: '',
       slug: '',
       shortDescription: '',
@@ -135,27 +116,44 @@ export default function AdminDashboardPage() {
     setIsDeleteAlertOpen(true);
   };
 
-  const confirmDelete = () => {
-    if (itemToDelete) {
-      setServices(prevServices => prevServices.filter(s => s.id !== itemToDelete.id));
-      toast({ title: "Service Deleted", description: `"${itemToDelete.title}" has been removed.` });
+  const confirmDelete = async () => {
+    if (itemToDelete && itemToDelete.id) {
+      const success = await deleteService(itemToDelete.id);
+      if (success) {
+        setServices(prevServices => prevServices.filter(s => s.id !== itemToDelete.id));
+        toast({ title: "Service Deleted", description: `"${itemToDelete.title}" has been removed.` });
+      } else {
+        toast({ variant: "destructive", title: "Deletion Failed", description: "Could not delete the service." });
+      }
     }
     setIsDeleteAlertOpen(false);
     setItemToDelete(null);
   };
 
-  const handleServiceFormSubmit = (e: React.FormEvent) => {
+  const handleServiceFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (currentService) {
-        const isNew = !services.some(s => s.id === currentService.id);
-        if (isNew) {
-            setServices(prev => [...prev, currentService]);
+    if (!currentService) return;
+
+    // Distinguish between add and edit
+    if (currentService.id) { // Editing existing service
+        const success = await updateService(currentService.id, currentService);
+        if (success) {
+            setServices(prev => prev.map(s => s.id === currentService.id ? {...s, ...currentService} as Service : s));
+            toast({ title: "Service Updated", description: `"${currentService.title}" has been updated.` });
+        } else {
+            toast({ variant: "destructive", title: "Update Failed", description: "Could not update the service." });
+        }
+    } else { // Adding new service
+        const newService = { ...currentService, id: undefined } as Omit<Service, 'id'>;
+        const newId = await addService(newService);
+        if (newId) {
+            setServices(prev => [...prev, { id: newId, ...newService } as Service]);
             toast({ title: "Service Added", description: `"${currentService.title}" has been added.` });
         } else {
-            setServices(prev => prev.map(s => s.id === currentService.id ? currentService : s));
-            toast({ title: "Service Updated", description: `"${currentService.title}" has been updated.` });
+            toast({ variant: "destructive", title: "Addition Failed", description: "Could not add the service." });
         }
     }
+    
     setIsServiceDialogOpen(false);
     setCurrentService(null);
   };
@@ -163,14 +161,16 @@ export default function AdminDashboardPage() {
   const handleServiceInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
     if (currentService) {
+        const updatedService = { ...currentService };
         if (id === 'highlights') {
-            setCurrentService({ ...currentService, highlights: value.split(',').map(s => s.trim()) });
+            updatedService.highlights = value.split(',').map(s => s.trim());
         } else if (id === 'slug') {
             const slugValue = value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-            setCurrentService({ ...currentService, [id]: slugValue });
+            updatedService.slug = slugValue;
         } else {
-            setCurrentService({ ...currentService, [id]: value });
+            (updatedService as any)[id] = value;
         }
+        setCurrentService(updatedService);
     }
   };
 
@@ -180,24 +180,33 @@ export default function AdminDashboardPage() {
     setIsPricingDialogOpen(true);
   };
 
-  const handlePlanFormSubmit = (e: React.FormEvent) => {
+  const handlePlanFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (currentPlan) {
-        setPricingPlans(prev => prev.map(p => p.id === currentPlan.id ? currentPlan : p));
-        toast({ title: "Pricing Plan Updated", description: `"${currentPlan.title}" has been updated.`});
+        const success = await updatePricingPlan(currentPlan.id, currentPlan);
+        if (success) {
+            setPricingPlans(prev => prev.map(p => p.id === currentPlan.id ? currentPlan : p));
+            toast({ title: "Pricing Plan Updated", description: `"${currentPlan.title}" has been updated.`});
+        } else {
+             toast({ variant: "destructive", title: "Update Failed", description: "Could not update the plan." });
+        }
     }
     setIsPricingDialogOpen(false);
     setCurrentPlan(null);
   };
 
   const handlePlanInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { id, value } = e.target;
+    const { id, value, type } = e.target;
     if (currentPlan) {
+        const updatedPlan = { ...currentPlan };
         if (id === 'features') {
-            setCurrentPlan({ ...currentPlan, features: value.split(',').map(s => s.trim()) });
+            updatedPlan.features = value.split(',').map(s => s.trim());
+        } else if (type === 'checkbox') {
+             (updatedPlan as any)[id] = (e.target as HTMLInputElement).checked;
         } else {
-            setCurrentPlan({ ...currentPlan, [id]: value });
+            (updatedPlan as any)[id] = value;
         }
+        setCurrentPlan(updatedPlan);
     }
   };
 
@@ -207,11 +216,16 @@ export default function AdminDashboardPage() {
     setIsYoutubeDialogOpen(true);
   };
 
-  const handleYoutubeFormSubmit = (e: React.FormEvent) => {
+  const handleYoutubeFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (currentYoutubeVideo) {
-        setYoutubeVideos(prev => prev.map(v => v.id === currentYoutubeVideo.id ? currentYoutubeVideo : v));
-        toast({ title: "YouTube Video Updated", description: `"${currentYoutubeVideo.title}" has been updated.`});
+        const success = await updateYouTubeVideo(currentYoutubeVideo.id, currentYoutubeVideo);
+        if (success) {
+            setYoutubeVideos(prev => prev.map(v => v.id === currentYoutubeVideo.id ? currentYoutubeVideo : v));
+            toast({ title: "YouTube Video Updated", description: `"${currentYoutubeVideo.title}" has been updated.`});
+        } else {
+            toast({ variant: "destructive", title: "Update Failed", description: "Could not update the video." });
+        }
     }
     setIsYoutubeDialogOpen(false);
     setCurrentYoutubeVideo(null);
@@ -223,6 +237,14 @@ export default function AdminDashboardPage() {
         setCurrentYoutubeVideo({ ...currentYoutubeVideo, [id]: value });
     }
   };
+
+  if (isLoading) {
+    return (
+        <div className="flex items-center justify-center min-h-screen">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
+    );
+  }
 
   return (
     <div className="p-4 md:p-8 space-y-8 min-h-screen">
@@ -261,9 +283,25 @@ export default function AdminDashboardPage() {
                     <Button variant="ghost" size="icon" onClick={() => handleEditService(service)}>
                         <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDeleteService(service)}>
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete the service "{service.title}".
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => confirmDelete()}>Delete</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </TableCell>
                 </TableRow>
               ))}
@@ -329,7 +367,7 @@ export default function AdminDashboardPage() {
       <Dialog open={isServiceDialogOpen} onOpenChange={setIsServiceDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>{currentService && services.some(s => s.id === currentService.id) ? 'Edit Service' : 'Add New Service'}</DialogTitle>
+            <DialogTitle>{currentService?.id ? 'Edit Service' : 'Add New Service'}</DialogTitle>
           </DialogHeader>
           {currentService && (
             <form onSubmit={handleServiceFormSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto p-1">
@@ -355,7 +393,7 @@ export default function AdminDashboardPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="highlights">Highlights (comma-separated)</Label>
-                <Textarea id="highlights" value={currentService.highlights.join(', ')} onChange={handleServiceInputChange} required />
+                <Textarea id="highlights" value={currentService.highlights?.join(', ')} onChange={handleServiceInputChange} required />
               </div>
                <div className="space-y-2">
                 <Label htmlFor="Icon">Icon Name (from lucide-react, e.g., Code, Palette)</Label>
@@ -389,6 +427,10 @@ export default function AdminDashboardPage() {
               <div className="space-y-2">
                 <Label htmlFor="features">Features (comma-separated)</Label>
                 <Textarea id="features" value={currentPlan.features.join(', ')} onChange={handlePlanInputChange} required rows={5}/>
+              </div>
+               <div className="flex items-center space-x-2">
+                <Input type="checkbox" id="isPopular" checked={currentPlan.isPopular} onChange={handlePlanInputChange} className="h-4 w-4"/>
+                <Label htmlFor="isPopular">Is this the most popular plan?</Label>
               </div>
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setIsPricingDialogOpen(false)}>Cancel</Button>
@@ -427,22 +469,6 @@ export default function AdminDashboardPage() {
           )}
         </DialogContent>
       </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the service "{itemToDelete?.title}".
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setIsDeleteAlertOpen(false)}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
     </div>
   );

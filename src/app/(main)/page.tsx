@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { initialServices, Service, getIconComponent, initialPricingPlans, PricingPlan, initialYouTubeVideos, YouTubeVideo } from "@/lib/services";
+import { Service, getIconComponent, PricingPlan, YouTubeVideo } from "@/lib/services";
+import { getServices, getPricingPlans, getYouTubeVideos } from '@/lib/firestore';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { CheckCircle2 } from "lucide-react";
@@ -14,10 +15,6 @@ const WhatsAppIcon = () => (
     </svg>
 )
 
-const SERVICES_STORAGE_KEY = 'tekitto_services';
-const PRICING_STORAGE_KEY = 'tekitto_pricing_plans';
-const YOUTUBE_STORAGE_KEY = 'tekitto_youtube_videos';
-
 export default function HomePage() {
   const [services, setServices] = useState<Service[]>([]);
   const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([]);
@@ -25,37 +22,24 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const storedServices = localStorage.getItem(SERVICES_STORAGE_KEY);
-      const storedPricing = localStorage.getItem(PRICING_STORAGE_KEY);
-      const storedYoutube = localStorage.getItem(YOUTUBE_STORAGE_KEY);
-      
-      if (storedServices && storedServices !== '[]') {
-        setServices(JSON.parse(storedServices));
-      } else {
-        setServices(initialServices);
-      }
-
-      if (storedPricing && storedPricing !== '[]') {
-        setPricingPlans(JSON.parse(storedPricing));
-      } else {
-        setPricingPlans(initialPricingPlans);
-      }
-
-       if (storedYoutube && storedYoutube !== '[]') {
-        setYoutubeVideos(JSON.parse(storedYoutube));
-      } else {
-        setYoutubeVideos(initialYouTubeVideos);
-      }
-
-    } catch (error) {
-        console.error("Failed to parse from localStorage", error);
-        setServices(initialServices);
-        setPricingPlans(initialPricingPlans);
-        setYoutubeVideos(initialYouTubeVideos);
-    } finally {
+    async function fetchData() {
+      setIsLoading(true);
+      try {
+        const [servicesData, pricingData, youtubeData] = await Promise.all([
+          getServices(),
+          getPricingPlans(),
+          getYouTubeVideos()
+        ]);
+        setServices(servicesData);
+        setPricingPlans(pricingData);
+        setYoutubeVideos(youtubeData);
+      } catch (error) {
+        console.error("Failed to fetch data from Firestore", error);
+      } finally {
         setIsLoading(false);
+      }
     }
+    fetchData();
   }, []);
 
   return (

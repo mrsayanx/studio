@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { initialServices, Service, getIconComponent } from "@/lib/services";
+import { Service, getIconComponent } from "@/lib/services";
+import { getServices } from '@/lib/firestore';
 import { notFound, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -9,37 +10,34 @@ import { CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { Skeleton } from '@/components/ui/skeleton';
 
-const SERVICES_STORAGE_KEY = 'tekitto_services';
-
 export default function ServiceDetailPage() {
   const params = useParams();
   const slug = params.slug as string;
   
   const [service, setService] = useState<Service | null>(null);
   const [relatedServices, setRelatedServices] = useState<Service[]>([]);
-  const [allServices, setAllServices] = useState<Service[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const storedServices = localStorage.getItem(SERVICES_STORAGE_KEY);
-      const services = (storedServices && storedServices !== '[]') ? JSON.parse(storedServices) : initialServices;
-      setAllServices(services);
-      
-      const currentService = services.find((s: Service) => s.slug === slug);
-      if (currentService) {
-        setService(currentService);
-        setRelatedServices(services.filter((s: Service) => s.id !== currentService.id).slice(0, 3));
+    async function fetchData() {
+      setIsLoading(true);
+      try {
+        const allServices = await getServices();
+        const currentService = allServices.find((s: Service) => s.slug === slug);
+        
+        if (currentService) {
+          setService(currentService);
+          setRelatedServices(allServices.filter((s: Service) => s.id !== currentService.id).slice(0, 3));
+        }
+      } catch (error) {
+        console.error("Failed to fetch services from Firestore", error);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Failed to parse services from localStorage", error);
-      const currentService = initialServices.find(s => s.slug === slug);
-       if (currentService) {
-        setService(currentService);
-        setRelatedServices(initialServices.filter((s: Service) => s.id !== currentService.id).slice(0, 3));
-      }
-    } finally {
-      setIsLoading(false);
+    }
+    
+    if (slug) {
+      fetchData();
     }
   }, [slug]);
 
@@ -88,7 +86,7 @@ export default function ServiceDetailPage() {
         <div className="md:col-span-2">
             <Card className="bg-card/80">
                 <CardHeader>
-                    <CardTitle>What&apos;s Included:</CardTitle>
+                    <CardTitle>What's Included:</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <ul className="space-y-3">

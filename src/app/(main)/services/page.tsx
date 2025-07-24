@@ -1,33 +1,30 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { initialServices, Service, getIconComponent } from "@/lib/services";
+import { Service, getIconComponent } from "@/lib/services";
+import { getServices } from '@/lib/firestore';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { Skeleton } from '@/components/ui/skeleton';
-
-
-const SERVICES_STORAGE_KEY = 'tekitto_services';
 
 export default function ServicesPage() {
   const [services, setServices] = useState<Service[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const storedServices = localStorage.getItem(SERVICES_STORAGE_KEY);
-      if (storedServices && storedServices !== '[]') {
-        setServices(JSON.parse(storedServices));
-      } else {
-        setServices(initialServices);
+    async function fetchData() {
+      setIsLoading(true);
+      try {
+        const servicesData = await getServices();
+        setServices(servicesData);
+      } catch (error) {
+        console.error("Failed to fetch services from Firestore", error);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Failed to parse services from localStorage", error);
-      setServices(initialServices);
-    } finally {
-      setIsLoading(false);
     }
+    fetchData();
   }, []);
 
   return (
