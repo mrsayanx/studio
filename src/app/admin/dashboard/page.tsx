@@ -26,6 +26,7 @@ import {
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
+  AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
@@ -446,5 +447,3 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
-
-    
