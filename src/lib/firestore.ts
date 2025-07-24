@@ -1,4 +1,5 @@
-import { collection, getDocs, doc, setDoc, addDoc, deleteDoc, getDoc, query, orderBy } from 'firebase/firestore';
+
+import { collection, getDocs, doc, setDoc, addDoc, deleteDoc, getDoc, query, orderBy, writeBatch } from 'firebase/firestore';
 import { db } from './firebase';
 import { initialServices, initialPricingPlans, initialYouTubeVideos, Service, PricingPlan, YouTubeVideo } from './services';
 
@@ -13,14 +14,20 @@ export async function getServices(): Promise<Service[]> {
   try {
     const q = query(servicesCollection, orderBy("title"));
     const snapshot = await getDocs(q);
+    
     if (snapshot.empty) {
-      // Seed the database if it's empty
-      for (const service of initialServices) {
-        await addDoc(servicesCollection, service);
-      }
+      console.log("Services collection is empty, seeding initial data...");
+      const batch = writeBatch(db);
+      initialServices.forEach((service) => {
+        const docRef = doc(servicesCollection); // Automatically generate new ID
+        batch.set(docRef, service);
+      });
+      await batch.commit();
+      
       const newSnapshot = await getDocs(q);
       return newSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Service));
     }
+    
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Service));
   } catch (error) {
     console.error("Error fetching services: ", error);
@@ -66,13 +73,20 @@ export async function deleteService(serviceId: string): Promise<boolean> {
 export async function getPricingPlans(): Promise<PricingPlan[]> {
   try {
     const snapshot = await getDocs(pricingCollection);
+    
     if (snapshot.empty) {
-      for (const plan of initialPricingPlans) {
-        await setDoc(doc(db, 'pricing', plan.id), plan);
-      }
+      console.log("Pricing collection is empty, seeding initial data...");
+      const batch = writeBatch(db);
+      initialPricingPlans.forEach((plan) => {
+        const docRef = doc(db, 'pricing', plan.id);
+        batch.set(docRef, plan);
+      });
+      await batch.commit();
+
        const newSnapshot = await getDocs(pricingCollection);
        return newSnapshot.docs.map(doc => doc.data() as PricingPlan).sort((a, b) => a.id === 'basic' ? -1 : 1);
     }
+    
     return snapshot.docs.map(doc => doc.data() as PricingPlan).sort((a, b) => a.id === 'basic' ? -1 : 1);
   } catch (error) {
     console.error("Error fetching pricing plans: ", error);
@@ -97,13 +111,20 @@ export async function updatePricingPlan(planId: string, planData: Partial<Pricin
 export async function getYouTubeVideos(): Promise<YouTubeVideo[]> {
   try {
     const snapshot = await getDocs(youtubeCollection);
+
     if (snapshot.empty) {
-      for (const video of initialYouTubeVideos) {
-        await addDoc(youtubeCollection, video);
-      }
+      console.log("YouTube collection is empty, seeding initial data...");
+      const batch = writeBatch(db);
+      initialYouTubeVideos.forEach((video) => {
+        const docRef = doc(youtubeCollection); // Automatically generate new ID
+        batch.set(docRef, video);
+      });
+      await batch.commit();
+
       const newSnapshot = await getDocs(youtubeCollection);
       return newSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as YouTubeVideo));
     }
+    
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as YouTubeVideo));
   } catch (error) {
     console.error("Error fetching YouTube videos: ", error);
