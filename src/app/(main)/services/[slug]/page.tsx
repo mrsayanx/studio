@@ -7,20 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { CheckCircle2 } from "lucide-react";
 import Link from "next/link";
-import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ServiceDetailPage() {
   const params = useParams();
   const slug = params.slug as string;
   
-  const [service, setService] = useState<Service | null>(null);
+  const [service, setService] = useState<Service | undefined>(undefined);
   const [relatedServices, setRelatedServices] = useState<Service[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (!slug) return;
-    
-    setIsLoading(true);
     
     const allServices = [...initialServices].map((s, i) => ({...s, id: `service_${i}`}));
     const currentService = allServices.find((s: Service) => s.slug === slug);
@@ -30,32 +26,14 @@ export default function ServiceDetailPage() {
       const related = allServices.filter((s: Service) => s.id !== currentService.id).slice(0, 3);
       setRelatedServices(related);
     } else {
-      setService(null);
+      notFound();
     }
     
-    setIsLoading(false);
   }, [slug]);
 
-  if (isLoading) {
-    return (
-      <div className="container mx-auto py-12 px-4 md:px-6">
-        <div className="grid md:grid-cols-5 gap-12 items-start">
-          <div className="md:col-span-3 space-y-6">
-            <Skeleton className="h-16 w-3/4" />
-            <Skeleton className="h-8 w-1/4" />
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-12 w-40" />
-          </div>
-          <div className="md:col-span-2">
-            <Skeleton className="h-64 w-full" />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   if (!service) {
-    notFound();
+    // This will be handled by the top-level loading.tsx until service is found
+    return null;
   }
   
   const Icon = getIconComponent(service.Icon);

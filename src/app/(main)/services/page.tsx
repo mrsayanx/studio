@@ -5,17 +5,13 @@ import { Service, getIconComponent, initialServices } from "@/lib/services";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ServicesPage() {
   const [services, setServices] = useState<Service[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setIsLoading(true);
     const sortedServices = [...initialServices].sort((a, b) => a.title.localeCompare(b.title)).map((s, i) => ({...s, id: `service_${i}`}));
     setServices(sortedServices);
-    setIsLoading(false);
   }, []);
 
   return (
@@ -26,42 +22,29 @@ export default function ServicesPage() {
             Explore our comprehensive range of digital solutions.
             </p>
         </div>
-        {isLoading ? (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-                <Card key={i} className="p-6 text-center">
-                    <Skeleton className="h-12 w-12 rounded-full mx-auto mb-4" />
-                    <Skeleton className="h-6 w-3/4 mx-auto mb-4" />
-                    <Skeleton className="h-4 w-full mx-auto mb-6" />
-                    <Skeleton className="h-10 w-full mx-auto" />
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {services.map((service) => {
+              const Icon = getIconComponent(service.Icon);
+              return (
+                <Card key={service.id} className="flex flex-col overflow-hidden group transform transition-all duration-300 hover:scale-105 hover:shadow-primary/20 hover:shadow-lg text-center">
+                    <CardHeader className="items-center p-6">
+                      <div className="p-4 bg-primary/10 rounded-full mb-4 border border-primary/20">
+                        <Icon className="h-8 w-8 text-primary" />
+                      </div>
+                      <CardTitle className="text-xl font-bold">{service.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-grow px-6 pb-6">
+                      <p className="text-muted-foreground text-sm">{service.shortDescription}</p>
+                    </CardContent>
+                    <CardFooter className="p-6 pt-0">
+                    <Button asChild className="w-full">
+                        <Link href={`/services/${service.slug}`}>View Details</Link>
+                    </Button>
+                    </CardFooter>
                 </Card>
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {services.map((service) => {
-                const Icon = getIconComponent(service.Icon);
-                return (
-                  <Card key={service.id} className="flex flex-col overflow-hidden group transform transition-all duration-300 hover:scale-105 hover:shadow-primary/20 hover:shadow-lg text-center">
-                      <CardHeader className="items-center p-6">
-                        <div className="p-4 bg-primary/10 rounded-full mb-4 border border-primary/20">
-                          <Icon className="h-8 w-8 text-primary" />
-                        </div>
-                        <CardTitle className="text-xl font-bold">{service.title}</CardTitle>
-                      </CardHeader>
-                      <CardContent className="flex-grow px-6 pb-6">
-                        <p className="text-muted-foreground text-sm">{service.shortDescription}</p>
-                      </CardContent>
-                      <CardFooter className="p-6 pt-0">
-                      <Button asChild className="w-full">
-                          <Link href={`/services/${service.slug}`}>View Details</Link>
-                      </Button>
-                      </CardFooter>
-                  </Card>
-                )
-              })}
-          </div>
-        )}
+              )
+            })}
+        </div>
     </div>
   );
 }
