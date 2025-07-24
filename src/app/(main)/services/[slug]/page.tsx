@@ -31,7 +31,6 @@ export default function ServiceDetailPage() {
           const related = allServices.filter((s: Service) => s.id !== currentService.id).slice(0, 3);
           setRelatedServices(related);
         } else {
-          // If service not found, set it to null to trigger notFound()
           setService(null);
         }
       } catch (error) {

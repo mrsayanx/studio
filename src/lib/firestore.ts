@@ -8,33 +8,33 @@ const servicesCollection = collection(db, 'services') as CollectionReference<Omi
 const pricingCollection = collection(db, 'pricing') as CollectionReference<Omit<PricingPlan, 'id'>>;
 const youtubeCollection = collection(db, 'youtube') as CollectionReference<Omit<YouTubeVideo, 'id'>>;
 
-
 // --- Generic Seeding Function ---
-async function seedCollection<T extends { id: string }>(
+async function seedCollection<T extends { id?: string }>(
   collectionRef: CollectionReference<Omit<T, 'id'>>,
   initialData: Omit<T, 'id'>[],
   idField?: keyof Omit<T, 'id'>
 ): Promise<void> {
     const batch = writeBatch(db);
     initialData.forEach((itemData) => {
+        // Use a specific field as ID if provided (like for pricing plans), otherwise auto-generate
         const docId = idField ? (itemData as any)[idField] : doc(collectionRef).id;
         const docRef = doc(collectionRef, docId);
         batch.set(docRef, itemData);
     });
     await batch.commit();
+    console.log(`Seeded ${collectionRef.id} collection.`);
 }
-
 
 // --- Service Functions ---
 export async function getServices(): Promise<Service[]> {
   try {
-    let snapshot = await getDocs(query(servicesCollection, orderBy("title")));
+    const q = query(servicesCollection, orderBy("title"));
+    let snapshot = await getDocs(q);
     
     if (snapshot.empty) {
       console.log("Services collection is empty, seeding initial data...");
       await seedCollection<Service>(servicesCollection, initialServices);
-      // After seeding, re-fetch the data to ensure we have correct IDs and order
-      snapshot = await getDocs(query(servicesCollection, orderBy("title")));
+      snapshot = await getDocs(q); // Re-fetch after seeding
     }
     
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Service));
@@ -76,7 +76,6 @@ export async function deleteService(serviceId: string): Promise<boolean> {
     }
 }
 
-
 // --- Pricing Plan Functions ---
 const pricingSort = (a: PricingPlan, b: PricingPlan): number => {
     if (a.id === 'basic') return -1;
@@ -91,7 +90,7 @@ export async function getPricingPlans(): Promise<PricingPlan[]> {
     if (snapshot.empty) {
       console.log("Pricing collection is empty, seeding initial data...");
       await seedCollection<PricingPlan>(pricingCollection, initialPricingPlans, 'id');
-      snapshot = await getDocs(pricingCollection);
+      snapshot = await getDocs(pricingCollection); // Re-fetch after seeding
     }
     
     const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as PricingPlan));
@@ -113,7 +112,6 @@ export async function updatePricingPlan(planId: string, planData: Partial<Pricin
   }
 }
 
-
 // --- YouTube Video Functions ---
 export async function getYouTubeVideos(): Promise<YouTubeVideo[]> {
   try {
@@ -122,7 +120,7 @@ export async function getYouTubeVideos(): Promise<YouTubeVideo[]> {
     if (snapshot.empty) {
       console.log("YouTube collection is empty, seeding initial data...");
       await seedCollection<YouTubeVideo>(youtubeCollection, initialYouTubeVideos);
-      snapshot = await getDocs(youtubeCollection);
+      snapshot = await getDocs(youtubeCollection); // Re-fetch after seeding
     }
     
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as YouTubeVideo));
