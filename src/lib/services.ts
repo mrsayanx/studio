@@ -111,7 +111,7 @@ export const initialServices: Omit<Service, 'id'>[] = [
     title: 'AI Video Ads',
     shortDescription: 'Create stunning video ads with AI technology.',
     description: 'Harness the power of AI to create high-quality, engaging video ads at a fraction of the cost. We use cutting-edge tools to produce professional videos that drive results for your campaigns.',
-    price: 'Starting from ₹2,500',
+    price: 'Starting from ₹499',
     highlights: ['Scriptwriting', 'AI Voiceovers', 'Stock Footage Included', 'Multiple Video Formats'],
     Icon: 'Clapperboard',
   },
