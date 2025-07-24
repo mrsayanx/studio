@@ -54,26 +54,28 @@ export default function AdminDashboardPage() {
       router.push('/admin');
     }
 
-    const storedServices = localStorage.getItem(SERVICES_STORAGE_KEY);
-    if (storedServices) setServices(JSON.parse(storedServices));
-    else setServices(initialServices);
-    
-    const storedPricing = localStorage.getItem(PRICING_STORAGE_KEY);
-    if(storedPricing) setPricingPlans(JSON.parse(storedPricing));
-    else setPricingPlans(initialPricingPlans);
+    try {
+        const storedServices = localStorage.getItem(SERVICES_STORAGE_KEY);
+        setServices(storedServices ? JSON.parse(storedServices) : initialServices);
+        
+        const storedPricing = localStorage.getItem(PRICING_STORAGE_KEY);
+        setPricingPlans(storedPricing ? JSON.parse(storedPricing) : initialPricingPlans);
 
-    const storedYoutube = localStorage.getItem(YOUTUBE_STORAGE_KEY);
-    if (storedYoutube) setYoutubeVideos(JSON.parse(storedYoutube));
-    else setYoutubeVideos(initialYouTubeVideos);
+        const storedYoutube = localStorage.getItem(YOUTUBE_STORAGE_KEY);
+        setYoutubeVideos(storedYoutube ? JSON.parse(storedYoutube) : initialYouTubeVideos);
 
-    const storedHomepageContent = localStorage.getItem(HOMEPAGE_CONTENT_STORAGE_KEY);
-    if(storedHomepageContent) setHomepageContent(JSON.parse(storedHomepageContent));
-    else setHomepageContent(initialHomepageContent);
-
+        const storedHomepageContent = localStorage.getItem(HOMEPAGE_CONTENT_STORAGE_KEY);
+        setHomepageContent(storedHomepageContent ? JSON.parse(storedHomepageContent) : initialHomepageContent);
+    } catch (error) {
+        console.error("Failed to parse from localStorage", error);
+        setServices(initialServices);
+        setPricingPlans(initialPricingPlans);
+        setYoutubeVideos(initialYouTubeVideos);
+        setHomepageContent(initialHomepageContent);
+    }
   }, [router]);
 
   useEffect(() => {
-    // Only save to localStorage if the services array is not empty
     if (services.length > 0) {
       localStorage.setItem(SERVICES_STORAGE_KEY, JSON.stringify(services));
     }
@@ -92,7 +94,6 @@ export default function AdminDashboardPage() {
   }, [youtubeVideos]);
   
   useEffect(() => {
-    // homepageContent is an object, not an array, so no length check needed
     localStorage.setItem(HOMEPAGE_CONTENT_STORAGE_KEY, JSON.stringify(homepageContent));
   }, [homepageContent]);
 
@@ -491,3 +492,5 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
+
+    
