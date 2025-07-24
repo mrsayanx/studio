@@ -21,10 +21,19 @@ export type Service = {
   description: string;
   price: string;
   highlights: string[];
-  Icon: LucideIcon;
+  Icon: LucideIcon | string; // Allow string for dynamic icon names
 };
 
-export const services: Service[] = [
+export type PricingPlan = {
+  id: 'basic' | 'premium';
+  title: string;
+  price: string;
+  isPopular: boolean;
+  features: string[];
+};
+
+
+export const initialServices: Service[] = [
   {
     id: 1,
     slug: 'website-development',
@@ -33,7 +42,7 @@ export const services: Service[] = [
     description: 'We build robust and scalable websites tailored to your business needs. From e-commerce platforms to corporate sites, our development process ensures a flawless user experience, fast loading times, and SEO-friendly architecture.',
     price: 'Starting from ₹999',
     highlights: ['Full-stack Development', 'Responsive on all devices', 'Optimized for Speed', 'Secure and Scalable'],
-    Icon: Code,
+    Icon: 'Code',
   },
   {
     id: 2,
@@ -43,7 +52,7 @@ export const services: Service[] = [
     description: 'Our design team creates visually stunning and user-friendly interfaces that captivate your audience. We focus on creating a seamless user journey that converts visitors into customers, reflecting your brand\'s identity in every pixel.',
     price: 'Starting from ₹999',
     highlights: ['UI/UX Research', 'Modern & Clean Layouts', 'Interactive Prototypes', 'Brand-centric Design'],
-    Icon: Palette,
+    Icon: 'Palette',
   },
   {
     id: 3,
@@ -53,7 +62,7 @@ export const services: Service[] = [
     description: 'A great logo is the cornerstone of your brand identity. We design unique and memorable logos that tell your brand\'s story and resonate with your target audience, ensuring your business stands out from the competition.',
     price: 'Starting from ₹199',
     highlights: ['Multiple Concepts', 'Vector Files Included', 'Full Copyright Ownership', 'Stationery Mockups'],
-    Icon: PenTool,
+    Icon: 'PenTool',
   },
   {
     id: 4,
@@ -63,7 +72,7 @@ export const services: Service[] = [
     description: 'Promote your events, products, or services with professionally designed posters. We create compelling visuals that grab attention and communicate your message effectively, whether for print or digital distribution.',
     price: 'Starting from ₹199',
     highlights: ['Print-ready Files', 'Custom Illustrations', 'Fast Turnaround', 'Multiple Size Formats'],
-    Icon: Megaphone,
+    Icon: 'Megaphone',
   },
   {
     id: 5,
@@ -73,7 +82,7 @@ export const services: Service[] = [
     description: 'We develop and execute data-driven social media strategies to increase your brand awareness, engagement, and conversions. From content creation to community management, we handle it all.',
     price: 'Contact for Quote',
     highlights: ['Strategy Development', 'Content Creation', 'Audience Growth', 'Performance Tracking & Reporting'],
-    Icon: ThumbsUp,
+    Icon: 'ThumbsUp',
   },
   {
     id: 6,
@@ -83,7 +92,7 @@ export const services: Service[] = [
     description: 'Get your business on the world\'s largest social network. We set up and optimize your Facebook page for maximum visibility and engagement, including profile and cover photos, business info, and call-to-action buttons.',
     price: '₹999',
     highlights: ['Page Creation & Optimization', 'Custom URL', 'Cover & Profile Photo Design', 'Initial Content Strategy'],
-    Icon: ThumbsUp,
+    Icon: 'ThumbsUp',
   },
   {
     id: 7,
@@ -93,7 +102,7 @@ export const services: Service[] = [
     description: 'Network effectively with a business card that stands out. We design custom business cards that reflect your brand\'s professionalism and style, ensuring you leave a memorable impression.',
     price: 'Starting from ₹99',
     highlights: ['Double-sided Design', 'Print-ready PDF', 'Multiple Design Concepts', 'QR Code Integration'],
-    Icon: CreditCard,
+    Icon: 'CreditCard',
   },
   {
     id: 8,
@@ -103,7 +112,7 @@ export const services: Service[] = [
     description: 'Leverage WhatsApp for Business with a professionally designed product catalog. We help you set up and design your catalog to make it easy for customers to browse and purchase your products.',
     price: 'Starting from ₹499',
     highlights: ['Catalog Setup', 'Professional Product Images', 'Compelling Descriptions', 'Easy to Manage'],
-    Icon: MessageCircle,
+    Icon: 'MessageCircle',
   },
   {
     id: 9,
@@ -113,7 +122,7 @@ export const services: Service[] = [
     description: 'Harness the power of AI to create high-quality, engaging video ads at a fraction of the cost. We use cutting-edge tools to produce professional videos that drive results for your campaigns.',
     price: 'Starting from ₹2,500',
     highlights: ['Scriptwriting', 'AI Voiceovers', 'Stock Footage Included', 'Multiple Video Formats'],
-    Icon: Clapperboard,
+    Icon: 'Clapperboard',
   },
   {
     id: 10,
@@ -123,6 +132,55 @@ export const services: Service[] = [
     description: 'Launch or rebrand your YouTube channel with a complete design kit. We provide a custom logo, channel art (cover), and a template for your video thumbnails to create a cohesive and professional look.',
     price: 'Starting from ₹3,000',
     highlights: ['Custom Channel Logo', 'Engaging Channel Art', 'Click-worthy Thumbnail Template', 'Brand Style Guide'],
-    Icon: Youtube,
+    Icon: 'Youtube',
   },
 ];
+
+
+export const initialPricingPlans: PricingPlan[] = [
+  {
+    id: 'basic',
+    title: 'Basic Plan',
+    price: '₹999',
+    isPopular: false,
+    features: [
+      'Logo Design',
+      '1 Poster Design',
+      'Facebook Page Setup Help',
+    ]
+  },
+  {
+    id: 'premium',
+    title: 'Premium Plan',
+    price: '₹2999',
+    isPopular: true,
+    features: [
+      'Everything in Basic Plan',
+      '30 Days Facebook Page Support',
+      'Daily Post Guidelines',
+      '4 Premium AI Promo Videos',
+      '12 Custom Posters',
+      'WhatsApp Marketing Help',
+    ]
+  }
+];
+
+
+// Helper function to get the correct icon component
+export const getIconComponent = (iconName: string | LucideIcon): LucideIcon => {
+  if (typeof iconName !== 'string') return iconName;
+
+  const iconMap: { [key: string]: LucideIcon } = {
+    PenTool,
+    Palette,
+    Megaphone,
+    Briefcase,
+    ThumbsUp,
+    CreditCard,
+    MessageCircle,
+    Clapperboard,
+    Youtube,
+    Code,
+  };
+  return iconMap[iconName] || Code;
+};
