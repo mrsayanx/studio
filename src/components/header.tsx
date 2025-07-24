@@ -18,7 +18,6 @@ const navLinks = [
   { href: "/services", label: "Services" },
   { href: "/pricing", label: "Pricing" },
   { href: "/contact", label: "Contact" },
-  { href: "/tagline-generator", label: "AI Tools" },
 ];
 
 export default function Header() {
