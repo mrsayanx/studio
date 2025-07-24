@@ -3,10 +3,32 @@ import { collection, getDocs, doc, setDoc, addDoc, deleteDoc, getDoc, query, ord
 import { db } from './firebase';
 import { initialServices, initialPricingPlans, initialYouTubeVideos, Service, PricingPlan, YouTubeVideo } from './services';
 
-// Collection references
-const servicesCollection = collection(db, 'services');
-const pricingCollection = collection(db, 'pricing');
-const youtubeCollection = collection(db, 'youtube');
+// --- Helper function to seed initial data and return it ---
+async function seedAndFetch<T>(
+  collectionRef: any, 
+  initialData: any[], 
+  idField?: string, 
+  orderByField?: string,
+  sortFn?: (a: T, b: T) => number
+): Promise<T[]> {
+    const batch = writeBatch(db);
+    initialData.forEach((item) => {
+        const docRef = idField ? doc(collectionRef, item[idField]) : doc(collectionRef); 
+        batch.set(docRef, item);
+    });
+    await batch.commit();
+
+    // After seeding, fetch the data again to ensure consistency
+    const q = orderByField ? query(collectionRef, orderBy(orderByField)) : collectionRef;
+    const newSnapshot = await getDocs(q);
+    const data = newSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as T));
+    
+    if (sortFn) {
+        return data.sort(sortFn);
+    }
+    return data;
+}
+
 
 // --- Service Functions ---
 
@@ -17,15 +39,7 @@ export async function getServices(): Promise<Service[]> {
     
     if (snapshot.empty) {
       console.log("Services collection is empty, seeding initial data...");
-      const batch = writeBatch(db);
-      initialServices.forEach((service) => {
-        const docRef = doc(servicesCollection); // Automatically generate new ID
-        batch.set(docRef, service);
-      });
-      await batch.commit();
-      
-      const newSnapshot = await getDocs(q);
-      return newSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Service));
+      return await seedAndFetch<Service>(servicesCollection, initialServices, undefined, "title");
     }
     
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Service));
@@ -69,6 +83,7 @@ export async function deleteService(serviceId: string): Promise<boolean> {
 
 
 // --- Pricing Plan Functions ---
+const pricingSort = (a: PricingPlan, b: PricingPlan) => (a.id === 'basic' ? -1 : 1);
 
 export async function getPricingPlans(): Promise<PricingPlan[]> {
   try {
@@ -76,18 +91,10 @@ export async function getPricingPlans(): Promise<PricingPlan[]> {
     
     if (snapshot.empty) {
       console.log("Pricing collection is empty, seeding initial data...");
-      const batch = writeBatch(db);
-      initialPricingPlans.forEach((plan) => {
-        const docRef = doc(db, 'pricing', plan.id);
-        batch.set(docRef, plan);
-      });
-      await batch.commit();
-
-       const newSnapshot = await getDocs(pricingCollection);
-       return newSnapshot.docs.map(doc => doc.data() as PricingPlan).sort((a, b) => a.id === 'basic' ? -1 : 1);
+      return await seedAndFetch<PricingPlan>(pricingCollection, initialPricingPlans, 'id', undefined, pricingSort);
     }
     
-    return snapshot.docs.map(doc => doc.data() as PricingPlan).sort((a, b) => a.id === 'basic' ? -1 : 1);
+    return snapshot.docs.map(doc => doc.data() as PricingPlan).sort(pricingSort);
   } catch (error) {
     console.error("Error fetching pricing plans: ", error);
     return [];
@@ -114,15 +121,7 @@ export async function getYouTubeVideos(): Promise<YouTubeVideo[]> {
 
     if (snapshot.empty) {
       console.log("YouTube collection is empty, seeding initial data...");
-      const batch = writeBatch(db);
-      initialYouTubeVideos.forEach((video) => {
-        const docRef = doc(youtubeCollection); // Automatically generate new ID
-        batch.set(docRef, video);
-      });
-      await batch.commit();
-
-      const newSnapshot = await getDocs(youtubeCollection);
-      return newSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as YouTubeVideo));
+      return await seedAndFetch<YouTubeVideo>(youtubeCollection, initialYouTubeVideos);
     }
     
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as YouTubeVideo));
