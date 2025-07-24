@@ -9,28 +9,10 @@ export const aboutUsContent = {
   ],
   team: [
     {
-      name: "Alex Doe",
-      role: "Founder & CEO",
-      bio: "The visionary behind Tekitto, with a passion for building beautiful and functional digital experiences.",
-      image: { src: "https://placehold.co/200x200.png", hint: "male portrait" }
-    },
-    {
-      name: "Jane Smith",
-      role: "Lead Designer",
-      bio: "The creative genius who brings ideas to life with stunning visuals and user-centric designs.",
-      image: { src: "https://placehold.co/200x200.png", hint: "female portrait" }
-    },
-    {
-      name: "Sam Wilson",
-      role: "Lead Developer",
-      bio: "The coding wizard who turns complex problems into elegant, high-performance solutions.",
-      image: { src: "https://placehold.co/200x200.png", hint: "male developer" }
-    },
-    {
-      name: "Emily White",
-      role: "Marketing Strategist",
-      bio: "The data-driven expert who connects brands with their audiences through effective marketing.",
-      image: { src: "https://placehold.co/200x200.png", hint: "female marketer" }
+      name: "Sayan Das",
+      role: "Founder & Visionary",
+      bio: "Sayan Das is the driving force behind Tekitto. With a profound passion for digital innovation and a clear vision for the future, he founded this company to empower businesses and individuals alike, turning creative ideas into reality.",
+      image: { src: "https://placehold.co/200x200.png", hint: "animated avatar" }
     },
   ],
 };
