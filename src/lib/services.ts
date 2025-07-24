@@ -32,6 +32,13 @@ export type PricingPlan = {
   features: string[];
 };
 
+export type YouTubeVideo = {
+  id: number;
+  videoId: string;
+  title: string;
+  description: string;
+};
+
 
 export const initialServices: Service[] = [
   {
@@ -163,6 +170,21 @@ export const initialPricingPlans: PricingPlan[] = [
       'WhatsApp Marketing Help',
     ]
   }
+];
+
+export const initialYouTubeVideos: YouTubeVideo[] = [
+    {
+        id: 1,
+        videoId: 'dQw4w9WgXcQ',
+        title: 'Our Featured Project Showcase',
+        description: 'Take a look at some of the best work we have delivered to our clients. See how we transform ideas into reality with creativity and technology.'
+    },
+    {
+        id: 2,
+        videoId: 'L_LUpnjgPso',
+        title: 'Client Testimonials & Success Stories',
+        description: 'Hear directly from our satisfied clients about their experience working with Tekitto and how we helped them achieve their business goals.'
+    }
 ];
 
 
