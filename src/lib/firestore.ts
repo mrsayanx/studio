@@ -9,51 +9,32 @@ const pricingCollection = collection(db, 'pricing') as CollectionReference<Omit<
 const youtubeCollection = collection(db, 'youtube') as CollectionReference<Omit<YouTubeVideo, 'id'>>;
 
 
-// --- Helper function to seed initial data AND return it ---
-async function seedAndFetch<T extends { id: string }>(
-  collectionRef: CollectionReference<Omit<T, 'id'>>, 
+// --- Generic Seeding Function ---
+async function seedCollection<T extends { id: string }>(
+  collectionRef: CollectionReference<Omit<T, 'id'>>,
   initialData: Omit<T, 'id'>[],
   idField?: keyof Omit<T, 'id'>
-): Promise<T[]> {
+): Promise<void> {
     const batch = writeBatch(db);
-    const newDocsData: T[] = [];
-
     initialData.forEach((itemData) => {
-        let docRef;
-        let docId;
-
-        // Use a predefined ID if available (like for pricing plans 'basic', 'premium')
-        if (idField && (itemData as any)[idField]) {
-            docId = (itemData as any)[idField];
-            docRef = doc(collectionRef, docId);
-        } else {
-            // Let Firestore auto-generate an ID for other collections
-            docRef = doc(collectionRef);
-            docId = docRef.id;
-        }
-        
+        const docId = idField ? (itemData as any)[idField] : doc(collectionRef).id;
+        const docRef = doc(collectionRef, docId);
         batch.set(docRef, itemData);
-        newDocsData.push({ id: docId, ...itemData } as T);
     });
-
     await batch.commit();
-    
-    // After seeding, return the data we just created
-    return newDocsData;
 }
 
 
 // --- Service Functions ---
 export async function getServices(): Promise<Service[]> {
   try {
-    const q = query(servicesCollection, orderBy("title"));
-    const snapshot = await getDocs(q);
+    let snapshot = await getDocs(query(servicesCollection, orderBy("title")));
     
     if (snapshot.empty) {
       console.log("Services collection is empty, seeding initial data...");
-      const seededData = await seedAndFetch<Service>(servicesCollection, initialServices);
-      // Sort the freshly seeded data before returning
-      return seededData.sort((a,b) => a.title.localeCompare(b.title));
+      await seedCollection<Service>(servicesCollection, initialServices);
+      // After seeding, re-fetch the data to ensure we have correct IDs and order
+      snapshot = await getDocs(query(servicesCollection, orderBy("title")));
     }
     
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Service));
@@ -98,7 +79,6 @@ export async function deleteService(serviceId: string): Promise<boolean> {
 
 // --- Pricing Plan Functions ---
 const pricingSort = (a: PricingPlan, b: PricingPlan): number => {
-    // Ensure 'basic' plan always comes first
     if (a.id === 'basic') return -1;
     if (b.id === 'basic') return 1;
     return 0;
@@ -106,12 +86,12 @@ const pricingSort = (a: PricingPlan, b: PricingPlan): number => {
 
 export async function getPricingPlans(): Promise<PricingPlan[]> {
   try {
-    const snapshot = await getDocs(pricingCollection);
+    let snapshot = await getDocs(pricingCollection);
     
     if (snapshot.empty) {
       console.log("Pricing collection is empty, seeding initial data...");
-      const seededData = await seedAndFetch<PricingPlan>(pricingCollection, initialPricingPlans, 'id');
-      return seededData.sort(pricingSort);
+      await seedCollection<PricingPlan>(pricingCollection, initialPricingPlans, 'id');
+      snapshot = await getDocs(pricingCollection);
     }
     
     const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as PricingPlan));
@@ -137,12 +117,12 @@ export async function updatePricingPlan(planId: string, planData: Partial<Pricin
 // --- YouTube Video Functions ---
 export async function getYouTubeVideos(): Promise<YouTubeVideo[]> {
   try {
-    const snapshot = await getDocs(youtubeCollection);
+    let snapshot = await getDocs(youtubeCollection);
 
     if (snapshot.empty) {
       console.log("YouTube collection is empty, seeding initial data...");
-      // Firestore will auto-generate IDs for videos
-      return await seedAndFetch<YouTubeVideo>(youtubeCollection, initialYouTubeVideos);
+      await seedCollection<YouTubeVideo>(youtubeCollection, initialYouTubeVideos);
+      snapshot = await getDocs(youtubeCollection);
     }
     
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as YouTubeVideo));
