@@ -13,13 +13,24 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { initialServices, Service, initialPricingPlans, PricingPlan, initialYouTubeVideos, YouTubeVideo } from "@/lib/services";
-import { Trash2, Edit, Video } from "lucide-react";
+import { Trash2, Edit, Video, PlusCircle } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+
 
 const SERVICES_STORAGE_KEY = 'tekitto_services';
 const PRICING_STORAGE_KEY = 'tekitto_pricing_plans';
@@ -36,7 +47,7 @@ export default function AdminDashboardPage() {
   const [isServiceDialogOpen, setIsServiceDialogOpen] = useState(false);
   const [currentService, setCurrentService] = useState<Service | null>(null);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
-  const [serviceToDelete, setServiceToDelete] = useState<Service | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<Service | null>(null);
 
   const [isPricingDialogOpen, setIsPricingDialogOpen] = useState(false);
   const [currentPlan, setCurrentPlan] = useState<PricingPlan | null>(null);
@@ -48,27 +59,34 @@ export default function AdminDashboardPage() {
     const isAuthenticated = sessionStorage.getItem("isAdminAuthenticated");
     if (!isAuthenticated) {
       router.push('/admin');
+      return;
     }
 
     try {
         const storedServices = localStorage.getItem(SERVICES_STORAGE_KEY);
-        setServices(storedServices ? JSON.parse(storedServices) : initialServices);
+        setServices(storedServices && storedServices !== '[]' ? JSON.parse(storedServices) : initialServices);
         
         const storedPricing = localStorage.getItem(PRICING_STORAGE_KEY);
-        setPricingPlans(storedPricing ? JSON.parse(storedPricing) : initialPricingPlans);
+        setPricingPlans(storedPricing && storedPricing !== '[]' ? JSON.parse(storedPricing) : initialPricingPlans);
 
         const storedYoutube = localStorage.getItem(YOUTUBE_STORAGE_KEY);
-        setYoutubeVideos(storedYoutube ? JSON.parse(storedYoutube) : initialYouTubeVideos);
+        setYoutubeVideos(storedYoutube && storedYoutube !== '[]' ? JSON.parse(storedYoutube) : initialYouTubeVideos);
 
     } catch (error) {
         console.error("Failed to parse from localStorage", error);
+        toast({
+            variant: "destructive",
+            title: "Error loading data",
+            description: "Could not load data from local storage. Using initial data."
+        });
         setServices(initialServices);
         setPricingPlans(initialPricingPlans);
         setYoutubeVideos(initialYouTubeVideos);
     }
-  }, [router]);
+  }, [router, toast]);
 
   useEffect(() => {
+    // Prevent writing empty initial array back to storage on first load
     if (services.length > 0) {
       localStorage.setItem(SERVICES_STORAGE_KEY, JSON.stringify(services));
     }
@@ -94,14 +112,14 @@ export default function AdminDashboardPage() {
   // --- Service Management ---
   const handleAddNewService = () => {
     setCurrentService({
-      id: Math.max(0, ...services.map(s => s.id)) + 1,
+      id: services.length > 0 ? Math.max(...services.map(s => s.id)) + 1 : 1,
       title: '',
       slug: '',
       shortDescription: '',
       description: '',
       price: '',
       highlights: [],
-      Icon: 'Code' as any,
+      Icon: 'Code',
     });
     setIsServiceDialogOpen(true);
   };
@@ -111,18 +129,18 @@ export default function AdminDashboardPage() {
     setIsServiceDialogOpen(true);
   };
   
-  const handleDeleteServiceClick = (service: Service) => {
-    setServiceToDelete(service);
+  const handleDeleteService = (service: Service) => {
+    setItemToDelete(service);
     setIsDeleteAlertOpen(true);
   };
 
-  const handleDeleteConfirm = () => {
-    if (serviceToDelete) {
-      setServices(services.filter(s => s.id !== serviceToDelete.id));
-      toast({ title: "Service Deleted", description: `"${serviceToDelete.title}" has been removed.` });
+  const confirmDelete = () => {
+    if (itemToDelete) {
+      setServices(prevServices => prevServices.filter(s => s.id !== itemToDelete.id));
+      toast({ title: "Service Deleted", description: `"${itemToDelete.title}" has been removed.` });
     }
     setIsDeleteAlertOpen(false);
-    setServiceToDelete(null);
+    setItemToDelete(null);
   };
 
   const handleServiceFormSubmit = (e: React.FormEvent) => {
@@ -130,10 +148,10 @@ export default function AdminDashboardPage() {
     if (currentService) {
         const isNew = !services.some(s => s.id === currentService.id);
         if (isNew) {
-            setServices([...services, currentService]);
+            setServices(prev => [...prev, currentService]);
             toast({ title: "Service Added", description: `"${currentService.title}" has been added.` });
         } else {
-            setServices(services.map(s => s.id === currentService.id ? currentService : s));
+            setServices(prev => prev.map(s => s.id === currentService.id ? currentService : s));
             toast({ title: "Service Updated", description: `"${currentService.title}" has been updated.` });
         }
     }
@@ -146,6 +164,9 @@ export default function AdminDashboardPage() {
     if (currentService) {
         if (id === 'highlights') {
             setCurrentService({ ...currentService, highlights: value.split(',').map(s => s.trim()) });
+        } else if (id === 'slug') {
+            const slugValue = value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+            setCurrentService({ ...currentService, [id]: slugValue });
         } else {
             setCurrentService({ ...currentService, [id]: value });
         }
@@ -161,7 +182,7 @@ export default function AdminDashboardPage() {
   const handlePlanFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (currentPlan) {
-        setPricingPlans(pricingPlans.map(p => p.id === currentPlan.id ? currentPlan : p));
+        setPricingPlans(prev => prev.map(p => p.id === currentPlan.id ? currentPlan : p));
         toast({ title: "Pricing Plan Updated", description: `"${currentPlan.title}" has been updated.`});
     }
     setIsPricingDialogOpen(false);
@@ -188,7 +209,7 @@ export default function AdminDashboardPage() {
   const handleYoutubeFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (currentYoutubeVideo) {
-        setYoutubeVideos(youtubeVideos.map(v => v.id === currentYoutubeVideo.id ? currentYoutubeVideo : v));
+        setYoutubeVideos(prev => prev.map(v => v.id === currentYoutubeVideo.id ? currentYoutubeVideo : v));
         toast({ title: "YouTube Video Updated", description: `"${currentYoutubeVideo.title}" has been updated.`});
     }
     setIsYoutubeDialogOpen(false);
@@ -203,29 +224,30 @@ export default function AdminDashboardPage() {
   };
 
   return (
-    <div className="p-4 md:p-8 space-y-8">
+    <div className="p-4 md:p-8 space-y-8 min-h-screen">
       <header className="flex justify-between items-center">
         <h1 className="text-2xl md:text-3xl font-bold">Admin Dashboard</h1>
         <Button onClick={handleLogout} variant="outline">Logout</Button>
       </header>
       
+      {/* Services Management Card */}
       <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
+        <CardHeader className="flex flex-row items-center justify-between">
             <div>
                 <CardTitle>Manage Services</CardTitle>
-                <CardDescription>Add, edit, or delete website services.</CardDescription>
+                <CardDescription>Add, edit, or delete your business services.</CardDescription>
             </div>
-            <Button onClick={handleAddNewService}>Add New Service</Button>
-          </div>
+            <Button onClick={handleAddNewService}>
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Add New Service
+            </Button>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Title</TableHead>
-                <TableHead className="hidden md:table-cell">Short Description</TableHead>
-                <TableHead>Price</TableHead>
+                <TableHead className="hidden md:table-cell">Price</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -233,13 +255,12 @@ export default function AdminDashboardPage() {
               {services.map((service) => (
                 <TableRow key={service.id}>
                   <TableCell className="font-medium">{service.title}</TableCell>
-                  <TableCell className="hidden md:table-cell">{service.shortDescription}</TableCell>
-                  <TableCell>{service.price}</TableCell>
+                  <TableCell className="hidden md:table-cell">{service.price}</TableCell>
                   <TableCell className="text-right space-x-2">
                     <Button variant="ghost" size="icon" onClick={() => handleEditService(service)}>
                         <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDeleteServiceClick(service)}>
+                    <Button variant="ghost" size="icon" onClick={() => handleDeleteService(service)}>
                         <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </TableCell>
@@ -251,6 +272,7 @@ export default function AdminDashboardPage() {
       </Card>
       
       <div className="grid md:grid-cols-2 gap-8">
+        {/* Pricing Plans Management Card */}
         <Card>
           <CardHeader>
               <CardTitle>Manage Pricing Plans</CardTitle>
@@ -274,6 +296,7 @@ export default function AdminDashboardPage() {
           </CardContent>
         </Card>
 
+        {/* YouTube Videos Management Card */}
         <Card>
           <CardHeader>
               <CardTitle>Manage YouTube Videos</CardTitle>
@@ -283,16 +306,16 @@ export default function AdminDashboardPage() {
              <div className="space-y-4">
                {youtubeVideos.map((video) => (
                  <div key={video.id} className="flex items-center justify-between p-4 border rounded-lg">
-                   <div className="flex items-center gap-4">
-                      <Video className="h-6 w-6 text-muted-foreground" />
-                      <div>
-                          <h3 className="font-bold">{video.title}</h3>
-                          <p className="text-sm text-muted-foreground">Video ID: {video.videoId}</p>
+                   <div className="flex items-center gap-4 overflow-hidden">
+                      <Video className="h-6 w-6 text-muted-foreground flex-shrink-0" />
+                      <div className="flex-grow overflow-hidden">
+                          <h3 className="font-bold truncate">{video.title}</h3>
+                          <p className="text-sm text-muted-foreground">ID: {video.videoId}</p>
                       </div>
                    </div>
                    <Button variant="outline" size="sm" onClick={() => handleEditYoutubeVideo(video)}>
                       <Edit className="h-4 w-4 mr-2"/>
-                      Edit Video
+                      Edit
                    </Button>
                  </div>
                ))}
@@ -301,20 +324,20 @@ export default function AdminDashboardPage() {
         </Card>
       </div>
 
-      {/* Service Edit/Add Dialog */}
+      {/* Service Add/Edit Dialog */}
       <Dialog open={isServiceDialogOpen} onOpenChange={setIsServiceDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>{currentService?.id && services.some(s => s.id === currentService.id) ? 'Edit Service' : 'Add New Service'}</DialogTitle>
+            <DialogTitle>{currentService && services.some(s => s.id === currentService.id) ? 'Edit Service' : 'Add New Service'}</DialogTitle>
           </DialogHeader>
           {currentService && (
-            <form onSubmit={handleServiceFormSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto p-4">
+            <form onSubmit={handleServiceFormSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto p-1">
               <div className="space-y-2">
                 <Label htmlFor="title">Title</Label>
                 <Input id="title" value={currentService.title} onChange={handleServiceInputChange} required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="slug">Slug</Label>
+                <Label htmlFor="slug">Slug (auto-generated from title)</Label>
                 <Input id="slug" value={currentService.slug} onChange={handleServiceInputChange} placeholder="e.g., website-development" required />
               </div>
               <div className="space-y-2">
@@ -334,10 +357,13 @@ export default function AdminDashboardPage() {
                 <Textarea id="highlights" value={currentService.highlights.join(', ')} onChange={handleServiceInputChange} required />
               </div>
                <div className="space-y-2">
-                <Label htmlFor="Icon">Icon Name (e.g., Code, Palette)</Label>
+                <Label htmlFor="Icon">Icon Name (from lucide-react, e.g., Code, Palette)</Label>
                 <Input id="Icon" value={currentService.Icon as string} onChange={handleServiceInputChange} required />
               </div>
-              <Button type="submit" className="w-full">Save Service</Button>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsServiceDialogOpen(false)}>Cancel</Button>
+                <Button type="submit">Save Service</Button>
+              </DialogFooter>
             </form>
           )}
         </DialogContent>
@@ -347,10 +373,10 @@ export default function AdminDashboardPage() {
       <Dialog open={isPricingDialogOpen} onOpenChange={setIsPricingDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit: {currentPlan?.title}</DialogTitle>
+            <DialogTitle>Edit Pricing Plan: {currentPlan?.title}</DialogTitle>
           </DialogHeader>
           {currentPlan && (
-            <form onSubmit={handlePlanFormSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto p-4">
+            <form onSubmit={handlePlanFormSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto p-1">
               <div className="space-y-2">
                 <Label htmlFor="title">Plan Title</Label>
                 <Input id="title" value={currentPlan.title} onChange={handlePlanInputChange} required />
@@ -363,7 +389,10 @@ export default function AdminDashboardPage() {
                 <Label htmlFor="features">Features (comma-separated)</Label>
                 <Textarea id="features" value={currentPlan.features.join(', ')} onChange={handlePlanInputChange} required rows={5}/>
               </div>
-              <Button type="submit" className="w-full">Save Plan</Button>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsPricingDialogOpen(false)}>Cancel</Button>
+                <Button type="submit">Save Plan</Button>
+              </DialogFooter>
             </form>
           )}
         </DialogContent>
@@ -373,10 +402,10 @@ export default function AdminDashboardPage() {
       <Dialog open={isYoutubeDialogOpen} onOpenChange={setIsYoutubeDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit: {currentYoutubeVideo?.title}</DialogTitle>
+            <DialogTitle>Edit YouTube Video: {currentYoutubeVideo?.title}</DialogTitle>
           </DialogHeader>
           {currentYoutubeVideo && (
-            <form onSubmit={handleYoutubeFormSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto p-4">
+            <form onSubmit={handleYoutubeFormSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto p-1">
               <div className="space-y-2">
                 <Label htmlFor="title">Video Title</Label>
                 <Input id="title" value={currentYoutubeVideo.title} onChange={handleYoutubeInputChange} required />
@@ -389,25 +418,30 @@ export default function AdminDashboardPage() {
                 <Label htmlFor="description">Video Description</Label>
                 <Textarea id="description" value={currentYoutubeVideo.description} onChange={handleYoutubeInputChange} required rows={5}/>
               </div>
-              <Button type="submit" className="w-full">Save Video</Button>
+              <DialogFooter>
+                 <Button type="button" variant="outline" onClick={() => setIsYoutubeDialogOpen(false)}>Cancel</Button>
+                <Button type="submit">Save Video</Button>
+              </DialogFooter>
             </form>
           )}
         </DialogContent>
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Are you sure?</DialogTitle>
-          </DialogHeader>
-          <p>This action cannot be undone. This will permanently delete the service "{serviceToDelete?.title}".</p>
-          <div className="flex justify-end gap-2 mt-4">
-            <Button variant="outline" onClick={() => setIsDeleteAlertOpen(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleDeleteConfirm}>Delete</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the service "{itemToDelete?.title}".
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setIsDeleteAlertOpen(false)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
     </div>
   );
