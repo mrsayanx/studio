@@ -30,6 +30,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
 
@@ -111,7 +112,7 @@ export default function AdminDashboardPage() {
     setIsServiceDialogOpen(true);
   };
   
-  const handleDeleteService = (service: Service) => {
+  const handleDeleteServiceClick = (service: Service) => {
     setItemToDelete(service);
     setIsDeleteAlertOpen(true);
   };
@@ -134,24 +135,26 @@ export default function AdminDashboardPage() {
     e.preventDefault();
     if (!currentService) return;
 
+    let success = false;
     // Distinguish between add and edit
     if (currentService.id) { // Editing existing service
-        const success = await updateService(currentService.id, currentService);
+        success = await updateService(currentService.id, currentService);
         if (success) {
             setServices(prev => prev.map(s => s.id === currentService.id ? {...s, ...currentService} as Service : s));
             toast({ title: "Service Updated", description: `"${currentService.title}" has been updated.` });
-        } else {
-            toast({ variant: "destructive", title: "Update Failed", description: "Could not update the service." });
         }
     } else { // Adding new service
-        const newService = { ...currentService, id: undefined } as Omit<Service, 'id'>;
-        const newId = await addService(newService);
+        const newServiceData = { ...currentService, id: undefined } as Omit<Service, 'id'>;
+        const newId = await addService(newServiceData);
         if (newId) {
-            setServices(prev => [...prev, { id: newId, ...newService } as Service]);
+            success = true;
+            setServices(prev => [...prev, { id: newId, ...newServiceData } as Service]);
             toast({ title: "Service Added", description: `"${currentService.title}" has been added.` });
-        } else {
-            toast({ variant: "destructive", title: "Addition Failed", description: "Could not add the service." });
         }
+    }
+    
+    if (!success) {
+        toast({ variant: "destructive", title: "Operation Failed", description: "Could not save the service." });
     }
     
     setIsServiceDialogOpen(false);
@@ -195,7 +198,7 @@ export default function AdminDashboardPage() {
     setCurrentPlan(null);
   };
 
-  const handlePlanInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handlePlanInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLInputElement>) => {
     const { id, value, type } = e.target;
     if (currentPlan) {
         const updatedPlan = { ...currentPlan };
@@ -283,25 +286,9 @@ export default function AdminDashboardPage() {
                     <Button variant="ghost" size="icon" onClick={() => handleEditService(service)}>
                         <Edit className="h-4 w-4" />
                     </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete the service "{service.title}".
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => confirmDelete()}>Delete</AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                    <Button variant="ghost" size="icon" onClick={() => handleDeleteServiceClick(service)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -362,6 +349,22 @@ export default function AdminDashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Service Delete Confirmation Dialog */}
+       <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the service "{itemToDelete?.title}".
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setIsDeleteAlertOpen(false)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Service Add/Edit Dialog */}
       <Dialog open={isServiceDialogOpen} onOpenChange={setIsServiceDialogOpen}>
