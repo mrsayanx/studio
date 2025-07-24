@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { initialServices, Service, getIconComponent, initialPricingPlans, PricingPlan, initialYouTubeVideos, YouTubeVideo } from "@/lib/services";
+import { initialServices, Service, getIconComponent, initialPricingPlans, PricingPlan, initialYouTubeVideos, YouTubeVideo, initialHomepageContent, HomepageContent } from "@/lib/services";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { CheckCircle2 } from "lucide-react";
@@ -17,11 +17,13 @@ const WhatsAppIcon = () => (
 const SERVICES_STORAGE_KEY = 'tekitto_services';
 const PRICING_STORAGE_KEY = 'tekitto_pricing_plans';
 const YOUTUBE_STORAGE_KEY = 'tekitto_youtube_videos';
+const HOMEPAGE_CONTENT_STORAGE_KEY = 'tekitto_homepage_content';
 
 export default function HomePage() {
   const [services, setServices] = useState<Service[]>([]);
   const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([]);
   const [youtubeVideos, setYoutubeVideos] = useState<YouTubeVideo[]>([]);
+  const [homepageContent, setHomepageContent] = useState<HomepageContent>(initialHomepageContent);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -29,6 +31,7 @@ export default function HomePage() {
       const storedServices = localStorage.getItem(SERVICES_STORAGE_KEY);
       const storedPricing = localStorage.getItem(PRICING_STORAGE_KEY);
       const storedYoutube = localStorage.getItem(YOUTUBE_STORAGE_KEY);
+      const storedHomepageContent = localStorage.getItem(HOMEPAGE_CONTENT_STORAGE_KEY);
       
       if (storedServices) {
         setServices(JSON.parse(storedServices));
@@ -47,11 +50,18 @@ export default function HomePage() {
       } else {
         setYoutubeVideos(initialYouTubeVideos);
       }
+
+      if (storedHomepageContent) {
+        setHomepageContent(JSON.parse(storedHomepageContent));
+      } else {
+        setHomepageContent(initialHomepageContent);
+      }
     } catch (error) {
         console.error("Failed to parse from localStorage", error);
         setServices(initialServices);
         setPricingPlans(initialPricingPlans);
         setYoutubeVideos(initialYouTubeVideos);
+        setHomepageContent(initialHomepageContent);
     } finally {
         setIsLoading(false);
     }
@@ -136,9 +146,9 @@ export default function HomePage() {
         <section id="videos" className="w-full py-12 md:py-24 lg:py-32 bg-background/90">
             <div className="container px-4 md:px-6">
                 <div className="text-center mb-12">
-                    <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl font-headline">From Our Channel</h2>
+                    <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl font-headline">{homepageContent.videoSectionTitle}</h2>
                     <p className="mt-3 max-w-2xl mx-auto text-muted-foreground md:text-xl">
-                        Check out our latest videos for insights, tutorials, and success stories.
+                        {homepageContent.videoSectionDescription}
                     </p>
                 </div>
                 {isLoading ? (
@@ -231,3 +241,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    

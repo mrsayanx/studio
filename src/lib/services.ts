@@ -39,6 +39,11 @@ export type YouTubeVideo = {
   description: string;
 };
 
+export type HomepageContent = {
+  videoSectionTitle: string;
+  videoSectionDescription: string;
+};
+
 
 export const initialServices: Service[] = [
   {
@@ -187,6 +192,11 @@ export const initialYouTubeVideos: YouTubeVideo[] = [
     }
 ];
 
+export const initialHomepageContent: HomepageContent = {
+  videoSectionTitle: 'Our Latest Videos',
+  videoSectionDescription: 'Check out our latest videos for insights, tutorials, and success stories.'
+};
+
 
 // Helper function to get the correct icon component
 export const getIconComponent = (iconName: string | LucideIcon): LucideIcon => {
@@ -206,3 +216,5 @@ export const getIconComponent = (iconName: string | LucideIcon): LucideIcon => {
   };
   return iconMap[iconName] || Code;
 };
+
+    
