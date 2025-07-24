@@ -4,7 +4,6 @@ import Link from "next/link";
 import {
   Menu,
   Search,
-  UploadCloud,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,16 +24,11 @@ export default function Header() {
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-sm">
       <div className="container flex h-16 items-center space-x-4 sm:justify-between sm:space-x-0">
         <div className="flex gap-6 md:gap-10 items-center">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 border-2 border-dashed rounded-md flex items-center justify-center text-muted-foreground">
-              <UploadCloud className="h-5 w-5" />
-            </div>
-            <Link href="/" className="flex items-center space-x-2">
-              <span className="font-bold text-lg">
-                <span className="text-primary">T</span>ekitto
-              </span>
-            </Link>
-          </div>
+          <Link href="/" className="flex items-center space-x-2">
+            <span className="font-bold text-lg">
+              <span className="text-primary">T</span>ekitto
+            </span>
+          </Link>
           <nav className="hidden gap-6 md:flex">
             {navLinks.map((link) => (
               <Link

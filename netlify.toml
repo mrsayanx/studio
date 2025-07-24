@@ -1,13 +1,16 @@
-# Netlify configuration for Next.js projects
-# https://docs.netlify.com/integrations/frameworks/next-js/
-
 [build]
-  # Command to build the project
   command = "npm run build"
-  
-  # Directory to publish
   publish = ".next"
 
 [[plugins]]
-  # The official Netlify plugin for Next.js handles most of the configuration
   package = "@netlify/plugin-nextjs"
+
+[[redirects]]
+  from = "/admin"
+  to = "/admin/page.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin/dashboard"
+  to = "/admin/dashboard/page.html"
+  status = 200
