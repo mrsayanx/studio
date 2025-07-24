@@ -20,6 +20,7 @@ export default function ServiceDetailPage() {
 
   useEffect(() => {
     async function fetchData() {
+      if (!slug) return;
       setIsLoading(true);
       try {
         const allServices = await getServices();
@@ -27,18 +28,21 @@ export default function ServiceDetailPage() {
         
         if (currentService) {
           setService(currentService);
-          setRelatedServices(allServices.filter((s: Service) => s.id !== currentService.id).slice(0, 3));
+          const related = allServices.filter((s: Service) => s.id !== currentService.id).slice(0, 3);
+          setRelatedServices(related);
+        } else {
+          // If service not found, set it to null to trigger notFound()
+          setService(null);
         }
       } catch (error) {
         console.error("Failed to fetch services from Firestore", error);
+        setService(null);
       } finally {
         setIsLoading(false);
       }
     }
     
-    if (slug) {
-      fetchData();
-    }
+    fetchData();
   }, [slug]);
 
   if (isLoading) {
