@@ -39,12 +39,6 @@ export type YouTubeVideo = {
   description: string;
 };
 
-export type HomepageContent = {
-  videoSectionTitle: string;
-  videoSectionDescription: string;
-};
-
-
 export const initialServices: Service[] = [
   {
     id: 1,
@@ -191,12 +185,6 @@ export const initialYouTubeVideos: YouTubeVideo[] = [
         description: 'Hear directly from our satisfied clients about their experience working with Tekitto and how we helped them achieve their business goals.'
     }
 ];
-
-export const initialHomepageContent: HomepageContent = {
-  videoSectionTitle: 'Our Latest Videos',
-  videoSectionDescription: 'Check out our latest videos for insights, tutorials, and success stories.'
-};
-
 
 // Helper function to get the correct icon component
 export const getIconComponent = (iconName: string | LucideIcon): LucideIcon => {

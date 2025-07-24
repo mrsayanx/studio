@@ -18,13 +18,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { initialServices, Service, initialPricingPlans, PricingPlan, initialYouTubeVideos, YouTubeVideo, initialHomepageContent, HomepageContent } from "@/lib/services";
-import { Trash2, Edit, Video, Home } from "lucide-react";
+import { initialServices, Service, initialPricingPlans, PricingPlan, initialYouTubeVideos, YouTubeVideo } from "@/lib/services";
+import { Trash2, Edit, Video } from "lucide-react";
 
 const SERVICES_STORAGE_KEY = 'tekitto_services';
 const PRICING_STORAGE_KEY = 'tekitto_pricing_plans';
 const YOUTUBE_STORAGE_KEY = 'tekitto_youtube_videos';
-const HOMEPAGE_CONTENT_STORAGE_KEY = 'tekitto_homepage_content';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -33,7 +32,6 @@ export default function AdminDashboardPage() {
   const [services, setServices] = useState<Service[]>([]);
   const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([]);
   const [youtubeVideos, setYoutubeVideos] = useState<YouTubeVideo[]>([]);
-  const [homepageContent, setHomepageContent] = useState<HomepageContent>(initialHomepageContent);
   
   const [isServiceDialogOpen, setIsServiceDialogOpen] = useState(false);
   const [currentService, setCurrentService] = useState<Service | null>(null);
@@ -45,9 +43,6 @@ export default function AdminDashboardPage() {
   
   const [isYoutubeDialogOpen, setIsYoutubeDialogOpen] = useState(false);
   const [currentYoutubeVideo, setCurrentYoutubeVideo] = useState<YouTubeVideo | null>(null);
-
-  const [isHomepageContentDialogOpen, setIsHomepageContentDialogOpen] = useState(false);
-  const [currentHomepageContent, setCurrentHomepageContent] = useState<HomepageContent | null>(null);
 
   useEffect(() => {
     const isAuthenticated = sessionStorage.getItem("isAdminAuthenticated");
@@ -65,14 +60,11 @@ export default function AdminDashboardPage() {
         const storedYoutube = localStorage.getItem(YOUTUBE_STORAGE_KEY);
         setYoutubeVideos(storedYoutube ? JSON.parse(storedYoutube) : initialYouTubeVideos);
 
-        const storedHomepageContent = localStorage.getItem(HOMEPAGE_CONTENT_STORAGE_KEY);
-        setHomepageContent(storedHomepageContent ? JSON.parse(storedHomepageContent) : initialHomepageContent);
     } catch (error) {
         console.error("Failed to parse from localStorage", error);
         setServices(initialServices);
         setPricingPlans(initialPricingPlans);
         setYoutubeVideos(initialYouTubeVideos);
-        setHomepageContent(initialHomepageContent);
     }
   }, [router]);
 
@@ -94,10 +86,6 @@ export default function AdminDashboardPage() {
     }
   }, [youtubeVideos]);
   
-  useEffect(() => {
-    localStorage.setItem(HOMEPAGE_CONTENT_STORAGE_KEY, JSON.stringify(homepageContent));
-  }, [homepageContent]);
-
   const handleLogout = () => {
     sessionStorage.removeItem("isAdminAuthenticated");
     router.push('/admin');
@@ -214,29 +202,6 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // --- Homepage Content Management ---
-  const handleEditHomepageContent = () => {
-    setCurrentHomepageContent(homepageContent);
-    setIsHomepageContentDialogOpen(true);
-  };
-
-  const handleHomepageContentFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (currentHomepageContent) {
-      setHomepageContent(currentHomepageContent);
-      toast({ title: "Homepage Content Updated" });
-    }
-    setIsHomepageContentDialogOpen(false);
-    setCurrentHomepageContent(null);
-  };
-
-  const handleHomepageContentInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { id, value } = e.target;
-    if (currentHomepageContent) {
-      setCurrentHomepageContent({ ...currentHomepageContent, [id]: value });
-    }
-  };
-
   return (
     <div className="p-4 md:p-8 space-y-8">
       <header className="flex justify-between items-center">
@@ -311,53 +276,30 @@ export default function AdminDashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Manage Homepage Content</CardTitle>
-            <CardDescription>Edit text on the main page.</CardDescription>
+              <CardTitle>Manage YouTube Videos</CardTitle>
+              <CardDescription>Update the videos featured on the homepage.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div className='flex items-center gap-4'>
-                  <Home className="h-6 w-6 text-muted-foreground" />
-                  <div>
-                      <h3 className="font-bold">Page Texts</h3>
-                      <p className="text-sm text-muted-foreground">Video section titles, etc.</p>
-                  </div>
-                </div>
-                <Button variant="outline" size="sm" onClick={handleEditHomepageContent}>
-                    <Edit className="h-4 w-4 mr-2"/>
-                    Edit Content
-                </Button>
-            </div>
+             <div className="space-y-4">
+               {youtubeVideos.map((video) => (
+                 <div key={video.id} className="flex items-center justify-between p-4 border rounded-lg">
+                   <div className="flex items-center gap-4">
+                      <Video className="h-6 w-6 text-muted-foreground" />
+                      <div>
+                          <h3 className="font-bold">{video.title}</h3>
+                          <p className="text-sm text-muted-foreground">Video ID: {video.videoId}</p>
+                      </div>
+                   </div>
+                   <Button variant="outline" size="sm" onClick={() => handleEditYoutubeVideo(video)}>
+                      <Edit className="h-4 w-4 mr-2"/>
+                      Edit Video
+                   </Button>
+                 </div>
+               ))}
+             </div>
           </CardContent>
         </Card>
       </div>
-
-
-      <Card>
-        <CardHeader>
-            <CardTitle>Manage YouTube Videos</CardTitle>
-            <CardDescription>Update the videos featured on the homepage.</CardDescription>
-        </CardHeader>
-        <CardContent>
-           <div className="space-y-4">
-             {youtubeVideos.map((video) => (
-               <div key={video.id} className="flex items-center justify-between p-4 border rounded-lg">
-                 <div className="flex items-center gap-4">
-                    <Video className="h-6 w-6 text-muted-foreground" />
-                    <div>
-                        <h3 className="font-bold">{video.title}</h3>
-                        <p className="text-sm text-muted-foreground">Video ID: {video.videoId}</p>
-                    </div>
-                 </div>
-                 <Button variant="outline" size="sm" onClick={() => handleEditYoutubeVideo(video)}>
-                    <Edit className="h-4 w-4 mr-2"/>
-                    Edit Video
-                 </Button>
-               </div>
-             ))}
-           </div>
-        </CardContent>
-      </Card>
 
       {/* Service Edit/Add Dialog */}
       <Dialog open={isServiceDialogOpen} onOpenChange={setIsServiceDialogOpen}>
@@ -452,29 +394,6 @@ export default function AdminDashboardPage() {
           )}
         </DialogContent>
       </Dialog>
-      
-      {/* Homepage Content Edit Dialog */}
-      <Dialog open={isHomepageContentDialogOpen} onOpenChange={setIsHomepageContentDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Homepage Content</DialogTitle>
-          </DialogHeader>
-          {currentHomepageContent && (
-            <form onSubmit={handleHomepageContentFormSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto p-4">
-              <div className="space-y-2">
-                <Label htmlFor="videoSectionTitle">Video Section Title</Label>
-                <Input id="videoSectionTitle" value={currentHomepageContent.videoSectionTitle} onChange={handleHomepageContentInputChange} required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="videoSectionDescription">Video Section Description</Label>
-                <Textarea id="videoSectionDescription" value={currentHomepageContent.videoSectionDescription} onChange={handleHomepageContentInputChange} required rows={3}/>
-              </div>
-              <Button type="submit" className="w-full">Save Content</Button>
-            </form>
-          )}
-        </DialogContent>
-      </Dialog>
-
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
@@ -493,5 +412,3 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
-
-    
